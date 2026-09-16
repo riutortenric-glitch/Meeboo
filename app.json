@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "Meeboo",
+    "slug": "Meeboo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.meeboo.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Meeboo uses your camera to log meals and recipe videos.",
+        "NSPhotoLibraryUsageDescription": "Meeboo needs access to your photo library to upload recipe videos.",
+        "NSHealthShareUsageDescription": "Meeboo reads sleep, steps and activity to track your progress automatically.",
+        "NSHealthUpdateUsageDescription": "Meeboo writes your logged workouts and water intake to Apple Health.",
+        "NSCalendarsUsageDescription": "Meeboo reads your calendar to plan workouts around your week."
+      }
+    },
+    "android": {
+      "package": "com.meeboo.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": ["CAMERA", "READ_MEDIA_IMAGES", "READ_MEDIA_VIDEO", "READ_CALENDAR"]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#1A6FCF"
+        }
+      ]
+    ]
+  }
+}
