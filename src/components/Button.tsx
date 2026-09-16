@@ -1,7 +1,7 @@
 import React from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, ViewStyle } from 'react-native';
 import { colors } from '../theme/colors';
-import { radii, spacing } from '../theme/spacing';
+import { radii, shadow, spacing } from '../theme/spacing';
 
 interface Props {
   title: string;
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: spacing.xl,
   },
-  primary: { backgroundColor: colors.primaryBlue },
+  primary: { backgroundColor: colors.primaryBlue, ...shadow.soft },
   secondary: {
     backgroundColor: colors.white,
     borderWidth: 1.5,

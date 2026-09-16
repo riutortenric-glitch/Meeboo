@@ -37,7 +37,7 @@ export function ProfileScreen() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.hero}>
-        <MeebooCharacter size={110} flameLevel="medium" bodyStage={profile?.bodyStageIndex ?? 3} float={false} />
+        <MeebooCharacter size={110} flameLevel="medium" bodyStage={profile?.bodyStageIndex ?? 3} goal={profile?.goal} float={false} />
         <Text style={styles.name}>{profile?.name ?? 'You'}</Text>
       </View>
 

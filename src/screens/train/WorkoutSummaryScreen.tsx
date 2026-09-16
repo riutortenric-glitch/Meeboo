@@ -39,7 +39,7 @@ export function WorkoutSummaryScreen() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.hero}>
-        <MeebooCharacter size={110} flameLevel="large" bodyStage={profile?.bodyStageIndex ?? 3} />
+        <MeebooCharacter size={110} flameLevel="large" bodyStage={profile?.bodyStageIndex ?? 3} goal={profile?.goal} />
         <Text style={styles.title}>Workout complete</Text>
         <Text style={styles.celebrate}>{workoutCompleteLine(session.completedSets.length)}</Text>
       </View>

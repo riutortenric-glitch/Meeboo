@@ -45,7 +45,7 @@ export function HomeScreen() {
         </View>
 
         <View style={styles.meebooWrap}>
-          <MeebooCharacter size={150} flameLevel={flameLevel} bodyStage={profile?.bodyStageIndex ?? 3} />
+          <MeebooCharacter size={150} flameLevel={flameLevel} bodyStage={profile?.bodyStageIndex ?? 3} goal={profile?.goal} />
           <View style={styles.speechBubble}>
             <Text style={styles.speechText}>{greeting}</Text>
           </View>

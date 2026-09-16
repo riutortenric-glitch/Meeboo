@@ -1,7 +1,7 @@
 import React, { PropsWithChildren } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { colors } from '../theme/colors';
-import { radii, spacing } from '../theme/spacing';
+import { radii, shadow, spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
 
 interface Props extends PropsWithChildren {
@@ -31,6 +31,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
     padding: spacing.md,
     minWidth: '46%',
+    ...shadow.card,
   },
   headerRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm },
   iconCircle: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },

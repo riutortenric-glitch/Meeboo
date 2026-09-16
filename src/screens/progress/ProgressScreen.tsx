@@ -6,7 +6,7 @@ import { Card } from '../../components/Card';
 import { MeebooCharacter } from '../../components/MeebooCharacter';
 import { ProgressBar } from '../../components/ProgressBar';
 import { colors } from '../../theme/colors';
-import { spacing } from '../../theme/spacing';
+import { shadow, spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
 import { muscleGroups, nextTierForSets, tierForSets } from '../../data/badges';
 import { useUserStore } from '../../state/userStore';
@@ -26,7 +26,7 @@ export function ProgressScreen() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.hero}>
-        <MeebooCharacter size={140} flameLevel={flameLevel} bodyStage={profile?.bodyStageIndex ?? 3} />
+        <MeebooCharacter size={140} flameLevel={flameLevel} bodyStage={profile?.bodyStageIndex ?? 3} goal={profile?.goal} />
         <Text style={styles.name}>{profile?.name ?? 'You'}</Text>
         {profile ? (
           <Text style={styles.meta}>BMI {profile.bmi.toFixed(1)} · {bmiCategoryLabel(profile.bmi)}</Text>
@@ -86,11 +86,13 @@ const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, justifyContent: 'space-between' },
   badgeCard: {
     width: '47%',
-    backgroundColor: colors.lightBlueSurface,
+    backgroundColor: colors.white,
     borderRadius: 20,
     padding: spacing.md,
+    paddingTop: spacing.lg,
     alignItems: 'center',
     gap: 4,
+    ...shadow.card,
   },
   badgeMuscle: { ...typography.body, fontWeight: '700', marginTop: spacing.xs },
   badgeTier: { ...typography.bodyMuted, fontSize: 13, marginBottom: spacing.xs },

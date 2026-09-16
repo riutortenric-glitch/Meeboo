@@ -1,12 +1,16 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Easing } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
-import { colors } from '../theme/colors';
+import { Animated, Easing, Image } from 'react-native';
+import { flameAsset } from '../assets/mascotAssets';
 
 export type FlameLevel = 'large' | 'medium' | 'small';
 
-const sizeForLevel: Record<FlameLevel, number> = { large: 34, medium: 26, small: 18 };
-const opacityForLevel: Record<FlameLevel, number> = { large: 1, medium: 0.85, small: 0.55 };
+const widthForLevel: Record<FlameLevel, number> = { large: 40, medium: 30, small: 20 };
+// Size (not opacity) carries the large/medium/small distinction — a translucent
+// flame optically blends with whatever's behind it (muddy on the blue gradient).
+const opacityForLevel: Record<FlameLevel, number> = { large: 1, medium: 1, small: 0.92 };
+const ASPECT = flameAsset.height / flameAsset.width;
+
+const AnimatedImage = Animated.createAnimatedComponent(Image);
 
 interface Props {
   level: FlameLevel;
@@ -14,7 +18,8 @@ interface Props {
 
 export function MeebooFlame({ level }: Props) {
   const flicker = useRef(new Animated.Value(0)).current;
-  const size = sizeForLevel[level];
+  const width = widthForLevel[level];
+  const height = width * ASPECT;
 
   useEffect(() => {
     const duration = level === 'small' ? 1400 : level === 'medium' ? 1000 : 700;
@@ -32,24 +37,15 @@ export function MeebooFlame({ level }: Props) {
   const rotate = flicker.interpolate({ inputRange: [0, 1], outputRange: ['-4deg', '4deg'] });
 
   return (
-    <Animated.View
+    <AnimatedImage
+      source={flameAsset.source}
+      resizeMode="contain"
       style={{
-        width: size,
-        height: size * 1.25,
+        width,
+        height,
         opacity: opacityForLevel[level],
         transform: [{ scale }, { rotate }],
       }}
-    >
-      <Svg width={size} height={size * 1.25} viewBox="0 0 24 30">
-        <Path
-          d="M12 0C12 6 4 9 4 17C4 23.6 8.4 30 12 30C15.6 30 20 23.6 20 17C20 9 12 6 12 0Z"
-          fill={colors.flameOrange}
-        />
-        <Path
-          d="M12 8C12 12 8 14 8 19C8 23 10.2 27 12 27C13.8 27 16 23 16 19C16 14 12 12 12 8Z"
-          fill={colors.flameYellow}
-        />
-      </Svg>
-    </Animated.View>
+    />
   );
 }

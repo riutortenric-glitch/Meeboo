@@ -1,7 +1,7 @@
 import React, { PropsWithChildren } from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
 import { colors } from '../theme/colors';
-import { radii, spacing } from '../theme/spacing';
+import { radii, shadow, spacing } from '../theme/spacing';
 
 interface Props extends PropsWithChildren {
   style?: ViewStyle;
@@ -16,11 +16,10 @@ const styles = StyleSheet.create({
   base: {
     borderRadius: radii.md,
     padding: spacing.lg,
+    ...shadow.card,
   },
   light: {
-    backgroundColor: colors.lightBlueSurface,
-    borderWidth: 1,
-    borderColor: colors.border,
+    backgroundColor: colors.white,
   },
   dark: {
     backgroundColor: colors.deepNavy,
