@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { BadgeIcon } from '../../components/BadgeIcon';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
-import { typography } from '../../theme/typography';
+import { fontFamilies, typography } from '../../theme/typography';
 import { badgeTiers, muscleGroups, tierForSets } from '../../data/badges';
 import { useWorkoutStore } from '../../state/workoutStore';
 import { MuscleGroup } from '../../types';
@@ -58,8 +58,8 @@ const styles = StyleSheet.create({
   },
   rowCurrent: { borderWidth: 2, borderColor: colors.primaryBlue },
   rowText: { flex: 1 },
-  tierLabel: { ...typography.body, fontWeight: '700' },
+  tierLabel: { ...typography.body, fontFamily: fontFamilies.bold },
   tierLabelMuted: { color: colors.textMuted },
   tierMeta: { ...typography.bodyMuted, fontSize: 12, marginTop: 2 },
-  check: { color: colors.successGreen, fontSize: 20, fontWeight: '700' },
+  check: { color: colors.successGreen, fontSize: 20, fontFamily: fontFamilies.bold },
 });

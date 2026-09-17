@@ -2,6 +2,7 @@ import React from 'react';
 import { Text, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { colors } from '../theme/colors';
+import { fontFamilies } from '../theme/typography';
 
 interface Props {
   consumed: number;
@@ -32,8 +33,8 @@ export function CalorieRing({ consumed, goal, size = 120 }: Props) {
           fill="none"
         />
       </Svg>
-      <Text style={{ fontSize: 20, fontWeight: '700', color: colors.deepNavy }}>{remaining}</Text>
-      <Text style={{ fontSize: 12, color: colors.textMuted }}>kcal left</Text>
+      <Text style={{ fontSize: 20, fontFamily: fontFamilies.bold, color: colors.deepNavy }}>{remaining}</Text>
+      <Text style={{ fontSize: 12, fontFamily: fontFamilies.regular, color: colors.textMuted }}>kcal left</Text>
     </View>
   );
 }

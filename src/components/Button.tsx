@@ -2,6 +2,7 @@ import React from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, ViewStyle } from 'react-native';
 import { colors } from '../theme/colors';
 import { radii, shadow, spacing } from '../theme/spacing';
+import { fontFamilies } from '../theme/typography';
 
 interface Props {
   title: string;
@@ -62,5 +63,5 @@ const styles = StyleSheet.create({
     borderColor: colors.primaryBlue,
   },
   ghost: { backgroundColor: 'transparent' },
-  text: { fontSize: 16, fontWeight: '700' },
+  text: { fontSize: 16, fontFamily: fontFamilies.semiBold },
 });

@@ -6,7 +6,7 @@ import { Card } from '../../components/Card';
 import { ProgressBar } from '../../components/ProgressBar';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
-import { typography } from '../../theme/typography';
+import { fontFamilies, typography } from '../../theme/typography';
 import { recipes } from '../../data/recipes';
 import { useNutritionStore } from '../../state/nutritionStore';
 import { RecipeCategory } from '../../types';
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   title: { ...typography.h1 },
   logBtn: { backgroundColor: colors.primaryBlue, borderRadius: 999, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
-  logBtnText: { color: colors.white, fontWeight: '700', fontSize: 13 },
+  logBtnText: { color: colors.white, fontFamily: fontFamilies.bold, fontSize: 13 },
   dashCard: { gap: spacing.md },
   dashRow: { flexDirection: 'row', gap: spacing.lg, alignItems: 'center' },
   macros: { flex: 1 },
@@ -135,20 +135,20 @@ const styles = StyleSheet.create({
   macroValue: { ...typography.label, color: colors.deepNavy },
   meebooComment: { ...typography.bodyMuted, fontStyle: 'italic' },
   waterCard: { gap: spacing.sm },
-  waterLabel: { ...typography.body, fontWeight: '600' },
+  waterLabel: { ...typography.body, fontFamily: fontFamilies.semiBold },
   waterRow: { flexDirection: 'row', gap: spacing.sm },
   drop: { width: 26, height: 26, borderRadius: 13, backgroundColor: colors.border, borderWidth: 1.5, borderColor: colors.primaryBlue },
   dropFilled: { backgroundColor: colors.primaryBlue },
   sectionTitle: { ...typography.h3, marginBottom: spacing.sm },
   mealRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm },
   mealEmoji: { fontSize: 28 },
-  mealName: { ...typography.body, fontWeight: '600' },
+  mealName: { ...typography.body, fontFamily: fontFamilies.semiBold },
   mealMacros: { ...typography.bodyMuted, fontSize: 12 },
   recipeRow: { gap: spacing.md, paddingRight: spacing.xl },
   recipeCard: { width: 150, gap: 4 },
   recipeThumb: { width: 150, height: 100, borderRadius: 16, backgroundColor: colors.lightBlueSurface },
-  recipeName: { ...typography.body, fontWeight: '600', fontSize: 14 },
+  recipeName: { ...typography.body, fontFamily: fontFamilies.semiBold, fontSize: 14 },
   recipeMeta: { ...typography.bodyMuted, fontSize: 11 },
   uploadLink: { alignItems: 'center', paddingVertical: spacing.md },
-  uploadLinkText: { color: colors.primaryBlue, fontWeight: '600' },
+  uploadLinkText: { color: colors.primaryBlue, fontFamily: fontFamilies.semiBold },
 });

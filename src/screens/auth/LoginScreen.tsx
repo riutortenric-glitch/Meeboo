@@ -75,7 +75,7 @@ export function LoginScreen() {
 const styles = StyleSheet.create({
   content: { flex: 1, justifyContent: 'space-between', padding: spacing.xl, paddingTop: spacing.xxxl },
   hero: { alignItems: 'center', marginTop: spacing.xxxl },
-  title: { ...typography.h1, color: colors.white, marginTop: spacing.lg, letterSpacing: 2 },
+  title: { ...typography.logo, color: colors.white, marginTop: spacing.lg },
   subtitle: {
     ...typography.body,
     color: colors.white,

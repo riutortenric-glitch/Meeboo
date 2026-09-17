@@ -1,3 +1,11 @@
+import {
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_600SemiBold,
+  Poppins_700Bold,
+  Poppins_800ExtraBold,
+  useFonts,
+} from '@expo-google-fonts/poppins';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
@@ -9,8 +17,15 @@ import { colors } from './src/theme/colors';
 
 export default function App() {
   const hasHydrated = useUserStore((s) => s.hasHydrated);
+  const [fontsLoaded] = useFonts({
+    Poppins_400Regular,
+    Poppins_500Medium,
+    Poppins_600SemiBold,
+    Poppins_700Bold,
+    Poppins_800ExtraBold,
+  });
 
-  if (!hasHydrated) {
+  if (!hasHydrated || !fontsLoaded) {
     return (
       <View style={styles.loading}>
         <MeebooCharacter size={100} flameLevel="medium" bodyStage={3} />

@@ -1,16 +1,25 @@
-import { Platform } from 'react-native';
 import { colors } from './colors';
 
-const fontFamily = Platform.select({ ios: 'System', android: 'sans-serif', default: 'System' });
+// Poppins is the "decorate the app" font — a bold, rounded geometric sans in
+// the same family as the friendly, high-personality display type popular on
+// Instagram-adjacent apps. Loaded via expo-font in App.tsx before first render.
+export const fontFamilies = {
+  black: 'Poppins_800ExtraBold',
+  bold: 'Poppins_700Bold',
+  semiBold: 'Poppins_600SemiBold',
+  medium: 'Poppins_500Medium',
+  regular: 'Poppins_400Regular',
+};
 
 export const typography = {
-  fontFamily,
-  h1: { fontFamily, fontSize: 30, fontWeight: '700' as const, color: colors.deepNavy },
-  h2: { fontFamily, fontSize: 24, fontWeight: '700' as const, color: colors.deepNavy },
-  h3: { fontFamily, fontSize: 19, fontWeight: '700' as const, color: colors.deepNavy },
-  body: { fontFamily, fontSize: 16, fontWeight: '400' as const, color: colors.deepNavy, lineHeight: 22.4 },
-  bodyMuted: { fontFamily, fontSize: 15, fontWeight: '400' as const, color: colors.textMuted, lineHeight: 21 },
-  notification: { fontFamily, fontSize: 15, fontWeight: '500' as const, color: colors.deepNavy },
-  statNumber: { fontFamily, fontSize: 22, fontWeight: '700' as const, color: colors.deepNavy },
-  label: { fontFamily, fontSize: 13, fontWeight: '600' as const, color: colors.textMuted },
+  fontFamily: fontFamilies.regular,
+  logo: { fontFamily: fontFamilies.black, fontSize: 34, color: colors.deepNavy, letterSpacing: 1 },
+  h1: { fontFamily: fontFamilies.bold, fontSize: 29, color: colors.deepNavy },
+  h2: { fontFamily: fontFamilies.bold, fontSize: 23, color: colors.deepNavy },
+  h3: { fontFamily: fontFamilies.semiBold, fontSize: 18, color: colors.deepNavy },
+  body: { fontFamily: fontFamilies.regular, fontSize: 16, color: colors.deepNavy, lineHeight: 22.4 },
+  bodyMuted: { fontFamily: fontFamilies.regular, fontSize: 15, color: colors.textMuted, lineHeight: 21 },
+  notification: { fontFamily: fontFamilies.medium, fontSize: 15, color: colors.deepNavy },
+  statNumber: { fontFamily: fontFamilies.bold, fontSize: 22, color: colors.deepNavy },
+  label: { fontFamily: fontFamilies.semiBold, fontSize: 12.5, color: colors.textMuted, letterSpacing: 0.2 },
 };

@@ -6,7 +6,7 @@ import { Button } from '../../components/Button';
 import { ProgressBar } from '../../components/ProgressBar';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
-import { typography } from '../../theme/typography';
+import { fontFamilies, typography } from '../../theme/typography';
 import { useNutritionStore } from '../../state/nutritionStore';
 import { RecipeCategory } from '../../types';
 import { estimateNutritionFromIngredients } from '../../utils/nutritionEstimate';
@@ -140,12 +140,12 @@ const styles = StyleSheet.create({
   optionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   option: { borderWidth: 1.5, borderColor: colors.border, borderRadius: 14, paddingVertical: spacing.sm, paddingHorizontal: spacing.md },
   optionSelected: { borderColor: colors.primaryBlue, backgroundColor: colors.lightBlueSurface },
-  optionText: { ...typography.body, fontWeight: '600', fontSize: 14 },
+  optionText: { ...typography.body, fontFamily: fontFamilies.semiBold, fontSize: 14 },
   optionTextSelected: { color: colors.primaryBlue },
   videoPicker: {
     height: 140, borderRadius: 16, borderWidth: 2, borderColor: colors.border, borderStyle: 'dashed',
     alignItems: 'center', justifyContent: 'center', marginBottom: spacing.md,
   },
-  videoPickerText: { color: colors.primaryBlue, fontWeight: '600' },
+  videoPickerText: { color: colors.primaryBlue, fontFamily: fontFamilies.semiBold },
   footer: { flexDirection: 'row', gap: spacing.md, padding: spacing.xl },
 });

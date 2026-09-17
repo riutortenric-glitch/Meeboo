@@ -5,7 +5,7 @@ import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
-import { typography } from '../../theme/typography';
+import { fontFamilies, typography } from '../../theme/typography';
 import { exerciseById, workoutTemplates } from '../../data/exercises';
 import { useWorkoutStore } from '../../state/workoutStore';
 
@@ -62,5 +62,5 @@ const styles = StyleSheet.create({
   templateExercises: { ...typography.bodyMuted, fontSize: 13 },
   startBtn: { marginTop: spacing.sm },
   lastSessionLink: { paddingVertical: spacing.lg, alignItems: 'center' },
-  lastSessionText: { color: colors.primaryBlue, fontWeight: '600' },
+  lastSessionText: { color: colors.primaryBlue, fontFamily: fontFamilies.semiBold },
 });

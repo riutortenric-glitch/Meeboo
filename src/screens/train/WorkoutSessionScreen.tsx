@@ -5,7 +5,7 @@ import { Button } from '../../components/Button';
 import { ProgressBar } from '../../components/ProgressBar';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
-import { typography } from '../../theme/typography';
+import { fontFamilies, typography } from '../../theme/typography';
 import { exerciseById, workoutTemplates } from '../../data/exercises';
 import { useWorkoutStore } from '../../state/workoutStore';
 import { TrainStackParamList } from '../../navigation/types';
@@ -201,13 +201,13 @@ const styles = StyleSheet.create({
   actions: { flexDirection: 'row', gap: spacing.md, padding: spacing.xl },
   restScreen: { flex: 1, backgroundColor: colors.deepNavy, alignItems: 'center', justifyContent: 'center', gap: spacing.sm },
   restLabel: { ...typography.h3, color: colors.white },
-  restTimer: { fontSize: 64, fontWeight: '700', color: colors.white },
+  restTimer: { fontSize: 64, fontFamily: fontFamilies.bold, color: colors.white },
   restNext: { ...typography.body, color: colors.white, opacity: 0.8 },
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(12,48,96,0.5)', alignItems: 'center', justifyContent: 'center' },
   modalCard: { backgroundColor: colors.white, borderRadius: 20, padding: spacing.xl, width: '80%', gap: spacing.lg, alignItems: 'center' },
   modalTitle: { ...typography.h3 },
   repsPicker: { flexDirection: 'row', alignItems: 'center', gap: spacing.xl },
   repsBtn: { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.lightBlueSurface, alignItems: 'center', justifyContent: 'center' },
-  repsBtnText: { fontSize: 24, fontWeight: '700', color: colors.primaryBlue },
-  repsValue: { fontSize: 32, fontWeight: '700', minWidth: 60, textAlign: 'center' },
+  repsBtnText: { fontSize: 24, fontFamily: fontFamilies.bold, color: colors.primaryBlue },
+  repsValue: { fontSize: 32, fontFamily: fontFamilies.bold, minWidth: 60, textAlign: 'center' },
 });

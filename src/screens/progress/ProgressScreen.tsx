@@ -7,7 +7,7 @@ import { MeebooCharacter } from '../../components/MeebooCharacter';
 import { ProgressBar } from '../../components/ProgressBar';
 import { colors } from '../../theme/colors';
 import { shadow, spacing } from '../../theme/spacing';
-import { typography } from '../../theme/typography';
+import { fontFamilies, typography } from '../../theme/typography';
 import { muscleGroups, nextTierForSets, tierForSets } from '../../data/badges';
 import { useUserStore } from '../../state/userStore';
 import { useWorkoutStore } from '../../state/workoutStore';
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     gap: 4,
     ...shadow.card,
   },
-  badgeMuscle: { ...typography.body, fontWeight: '700', marginTop: spacing.xs },
+  badgeMuscle: { ...typography.body, fontFamily: fontFamilies.bold, marginTop: spacing.xs },
   badgeTier: { ...typography.bodyMuted, fontSize: 13, marginBottom: spacing.xs },
   badgeSub: { ...typography.bodyMuted, fontSize: 11, marginTop: 4, textAlign: 'center' },
 });

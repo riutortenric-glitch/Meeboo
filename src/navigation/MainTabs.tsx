@@ -4,6 +4,7 @@ import { HomeIcon, MeIcon, NutritionIcon, ProgressIcon, TrainIcon } from '../com
 import { HomeScreen } from '../screens/home/HomeScreen';
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
 import { colors } from '../theme/colors';
+import { fontFamilies } from '../theme/typography';
 import { MainTabParamList } from './types';
 import { NutritionNavigator } from './NutritionNavigator';
 import { ProgressNavigator } from './ProgressNavigator';
@@ -19,7 +20,7 @@ export function MainTabs() {
         tabBarActiveTintColor: colors.primaryBlue,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: { paddingTop: 6, height: 64 },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
+        tabBarLabelStyle: { fontSize: 11, fontFamily: fontFamilies.semiBold },
       }}
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarIcon: ({ color }) => <HomeIcon color={color} /> }} />

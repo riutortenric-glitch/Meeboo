@@ -5,7 +5,7 @@ import { Button } from '../../components/Button';
 import { ProgressBar } from '../../components/ProgressBar';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
-import { typography } from '../../theme/typography';
+import { fontFamilies, typography } from '../../theme/typography';
 import { recipeById, recipes } from '../../data/recipes';
 import { useNutritionStore } from '../../state/nutritionStore';
 import { NutritionStackParamList } from '../../navigation/types';
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     height: 200, borderRadius: 20, backgroundColor: colors.deepNavy,
     alignItems: 'center', justifyContent: 'center', marginBottom: spacing.lg,
   },
-  videoLabel: { color: colors.white, fontSize: 16, fontWeight: '600' },
+  videoLabel: { color: colors.white, fontSize: 16, fontFamily: fontFamilies.semiBold },
   title: { ...typography.h2 },
   meta: { ...typography.bodyMuted, marginBottom: spacing.md },
   calorieRow: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.sm, marginBottom: spacing.lg },

@@ -5,7 +5,7 @@ import { MeebooCharacter } from '../../components/MeebooCharacter';
 import { ProgressBar } from '../../components/ProgressBar';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
-import { typography } from '../../theme/typography';
+import { fontFamilies, typography } from '../../theme/typography';
 import { useUserStore } from '../../state/userStore';
 import { Challenge, Goal, Sex, TrainingType, UnitSystem } from '../../types';
 import { bmiCategoryLabel, calculateBmi, calculateStartingBodyStage } from '../../utils/bodyType';
@@ -236,17 +236,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
   optionSelected: { borderColor: colors.primaryBlue, backgroundColor: colors.lightBlueSurface },
-  optionText: { ...typography.body, fontWeight: '600' },
+  optionText: { ...typography.body, fontFamily: fontFamilies.semiBold },
   optionTextSelected: { color: colors.primaryBlue },
   stepperRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg },
   stepperBtn: {
     width: 44, height: 44, borderRadius: 22, backgroundColor: colors.lightBlueSurface,
     alignItems: 'center', justifyContent: 'center',
   },
-  stepperBtnText: { fontSize: 22, fontWeight: '700', color: colors.primaryBlue },
+  stepperBtnText: { fontSize: 22, fontFamily: fontFamilies.bold, color: colors.primaryBlue },
   stepperValue: { ...typography.h3, minWidth: 90, textAlign: 'center' },
   bmiCard: { backgroundColor: colors.lightBlueSurface, borderRadius: 14, padding: spacing.md, marginTop: spacing.lg },
-  bmiText: { ...typography.body, fontWeight: '600', textAlign: 'center' },
+  bmiText: { ...typography.body, fontFamily: fontFamilies.semiBold, textAlign: 'center' },
   footer: { flexDirection: 'row', gap: spacing.md, padding: spacing.xl, paddingBottom: spacing.xl },
   backBtn: { flex: 0.4 },
   nextBtn: { flex: 1 },

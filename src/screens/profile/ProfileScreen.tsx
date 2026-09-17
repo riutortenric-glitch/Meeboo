@@ -6,7 +6,7 @@ import { Card } from '../../components/Card';
 import { MeebooCharacter } from '../../components/MeebooCharacter';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
-import { typography } from '../../theme/typography';
+import { fontFamilies, typography } from '../../theme/typography';
 import { useUserStore } from '../../state/userStore';
 import { useWorkoutStore } from '../../state/workoutStore';
 import { bmiCategoryLabel } from '../../utils/bodyType';
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: spacing.sm },
   rowBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
   rowLabel: { ...typography.bodyMuted },
-  rowValue: { ...typography.body, fontWeight: '600' },
+  rowValue: { ...typography.body, fontFamily: fontFamilies.semiBold },
   hint: { ...typography.bodyMuted, fontSize: 12 },
   deleteBtn: { marginTop: spacing.md, borderColor: colors.danger },
 });

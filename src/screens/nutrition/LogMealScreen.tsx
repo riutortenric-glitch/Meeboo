@@ -6,7 +6,7 @@ import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
-import { typography } from '../../theme/typography';
+import { fontFamilies, typography } from '../../theme/typography';
 import { useNutritionStore } from '../../state/nutritionStore';
 import { estimateNutritionFromPhoto } from '../../utils/nutritionEstimate';
 
@@ -115,14 +115,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     backgroundColor: colors.lightBlueSurface, borderRadius: 14, padding: spacing.md, marginBottom: spacing.sm,
   },
-  repeatName: { ...typography.body, fontWeight: '600' },
-  repeatAction: { color: colors.primaryBlue, fontWeight: '700', fontSize: 12 },
+  repeatName: { ...typography.body, fontFamily: fontFamilies.semiBold },
+  repeatAction: { color: colors.primaryBlue, fontFamily: fontFamilies.bold, fontSize: 12 },
   resultCard: { alignItems: 'center', gap: spacing.xs },
   resultPhoto: { width: '100%', height: 160, borderRadius: 16, marginBottom: spacing.sm },
   resultEmoji: { fontSize: 40 },
   resultName: { ...typography.h3 },
   resultCalories: { ...typography.h2, color: colors.primaryBlue },
   macroRow: { flexDirection: 'row', gap: spacing.lg, marginVertical: spacing.sm },
-  macroText: { ...typography.bodyMuted, fontWeight: '600' },
+  macroText: { ...typography.bodyMuted, fontFamily: fontFamilies.semiBold },
   resultActions: { flexDirection: 'row', gap: spacing.md, width: '100%', marginTop: spacing.md },
 });
