@@ -2,6 +2,9 @@
 
 # dependencies
 node_modules/
+# the GitHub Pages build ships pre-bundled font/icon assets under this name
+!docs/assets/node_modules/
+!docs/assets/node_modules/**
 
 # Expo
 .expo/
