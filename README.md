@@ -55,17 +55,30 @@ accounts/credentials only you can provide, not more app code:
 
 ```
 src/
-  theme/        colors, typography, spacing tokens
-  components/    MeebooCharacter, MeebooFlame, Button, Card, BadgeIcon, ...
-  state/         zustand stores (user, workouts, nutrition), AsyncStorage-persisted
-  data/          exercises, workout templates, badge tiers, seed recipes
-  utils/         BMI/body-type math, flame level, Meeboo's notification voice, notifications
-  navigation/    root stack + 5-tab navigator + per-tab stacks
-  screens/       auth, onboarding, home, progress, train, nutrition, profile
+  theme/          colors, typography, spacing/radii/shadow/motion tokens
+  illustrations/  Meeboo mascot + badge medals — procedural, gradient-shaded SVG
+                  (no bitmap art), parameterized by body stage / tier / flame level
+  components/     Button, Card, StatTile, AppShell (sidebar/tab-bar shell), icons, ...
+  state/          zustand stores (user, workouts, nutrition), AsyncStorage-persisted
+  data/           exercises, workout templates, badge tiers, seed recipes
+  utils/          BMI/body-type math, flame level, Meeboo's notification voice, notifications
+  navigation/     root stack + hand-rolled top-level tab shell + per-tab stacks
+  screens/        auth, onboarding, home, progress, train, nutrition, profile
 ```
 
 ## Design system
 
-Colors, type scale and component rules (pill buttons, 20-24px card radii,
-SF Pro / system font) come straight from section 05 of the product doc —
-see `src/theme/`.
+A from-scratch visual pass over the original build: a deeper/richer color
+system, an Apple HIG-style type scale, soft multi-step elevation, and glass
+surfaces (see `src/theme/`). The Meeboo mascot, the six badge tiers and the
+20-stage body scale are all rendered live as gradient-shaded, lit SVG —
+built once in `src/illustrations/`, parameterized everywhere — rather than
+flat reference art, so they read as dimensional at any size.
+
+The app layout is responsive: a left sidebar nav on wide web viewports, a
+bottom tab bar on mobile, sharing one hand-rolled tab shell
+(`src/components/AppShell.tsx`, `src/navigation/MainTabs.tsx`) rather than
+React Navigation's bottom-tabs, which can't reshape into a sidebar.
+
+To produce a static web build for hosting: `npx expo export --platform web`
+(outputs to `dist/`).

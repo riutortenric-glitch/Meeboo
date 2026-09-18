@@ -19,6 +19,7 @@ export const SET_ACTION_CATEGORY = 'workout-set';
  * Go the notification still appears but tapping it just opens the app.
  */
 export async function configureNotificationCategories() {
+  if (Platform.OS === 'web') return;
   await Notifications.setNotificationCategoryAsync(SET_ACTION_CATEGORY, [
     { identifier: 'DONE', buttonTitle: 'Done', options: { opensAppToForeground: false } },
     { identifier: 'DIFFERENT_REPS', buttonTitle: 'Different reps', options: { opensAppToForeground: true } },
@@ -26,6 +27,7 @@ export async function configureNotificationCategories() {
 }
 
 export async function requestNotificationPermission(): Promise<boolean> {
+  if (Platform.OS === 'web') return false;
   const { status: existing } = await Notifications.getPermissionsAsync();
   if (existing === 'granted') return true;
   const { status } = await Notifications.requestPermissionsAsync();
@@ -33,6 +35,7 @@ export async function requestNotificationPermission(): Promise<boolean> {
 }
 
 export async function scheduleRestTimer(seconds: number, nextExerciseName: string) {
+  if (Platform.OS === 'web') return null;
   return Notifications.scheduleNotificationAsync({
     content: {
       title: 'Rest complete',
@@ -46,6 +49,7 @@ export async function scheduleRestTimer(seconds: number, nextExerciseName: strin
 }
 
 export async function scheduleWeeklyPlanNotification() {
+  if (Platform.OS === 'web') return null;
   return Notifications.scheduleNotificationAsync({
     content: {
       title: 'Your week with Meeboo',

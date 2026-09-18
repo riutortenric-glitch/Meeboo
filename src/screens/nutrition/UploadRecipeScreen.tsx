@@ -1,17 +1,18 @@
 import { useNavigation } from '@react-navigation/native';
-import * as ImagePicker from 'expo-image-picker';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button } from '../../components/Button';
+import { Card } from '../../components/Card';
+import { CameraIcon } from '../../components/icons';
 import { ProgressBar } from '../../components/ProgressBar';
-import { colors } from '../../theme/colors';
-import { spacing } from '../../theme/spacing';
-import { fontFamilies, typography } from '../../theme/typography';
-import { useNutritionStore } from '../../state/nutritionStore';
 import { RecipeCategory } from '../../types';
+import { useNutritionStore } from '../../state/nutritionStore';
+import { colors } from '../../theme/colors';
+import { radii, shadow, spacing } from '../../theme/spacing';
+import { fontFamilies, typography } from '../../theme/typography';
 import { estimateNutritionFromIngredients } from '../../utils/nutritionEstimate';
 
-const categories: { id: RecipeCategory; label: string }[] = [
+const categoryOptions: { id: RecipeCategory; label: string }[] = [
   { id: 'high_protein', label: 'High Protein' },
   { id: 'high_calorie', label: 'High Calorie' },
   { id: 'low_calorie', label: 'Low Calorie' },
@@ -21,103 +22,92 @@ export function UploadRecipeScreen() {
   const navigation = useNavigation<any>();
   const addUserRecipe = useNutritionStore((s) => s.addUserRecipe);
   const [step, setStep] = useState(0);
-
   const [name, setName] = useState('');
   const [category, setCategory] = useState<RecipeCategory>('high_protein');
-  const [servingSize, setServingSize] = useState('300');
-  const [videoUri, setVideoUri] = useState<string | null>(null);
+  const [servingSizeG, setServingSizeG] = useState('350');
   const [ingredientsText, setIngredientsText] = useState('');
+  const [videoAttached, setVideoAttached] = useState(false);
 
-  const pickVideo = async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) return;
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['videos'],
-      videoMaxDuration: 300,
-    });
-    if (!result.canceled) setVideoUri(result.assets[0].uri);
-  };
+  const ingredients = ingredientsText.split('\n').map((s) => s.trim()).filter(Boolean);
+  const nutrition = estimateNutritionFromIngredients(ingredients, Number(servingSizeG) || 300);
 
   const finish = () => {
-    const ingredients = ingredientsText.split('\n').map((s) => s.trim()).filter(Boolean);
-    const serving = parseInt(servingSize, 10) || 300;
-    const nutrition = estimateNutritionFromIngredients(ingredients, serving);
     addUserRecipe({
       id: `user_${Date.now()}`,
-      name: name.trim() || 'My recipe',
+      name: name || 'My recipe',
       category,
-      servingSizeG: serving,
+      servingSizeG: Number(servingSizeG) || 300,
       ingredients,
       uploadedBy: 'You',
-      isUserUploaded: true,
-      prepTimeMin: 15,
+      prepTimeMin: 20,
       difficulty: 'easy',
+      isUserUploaded: true,
       ...nutrition,
     });
     navigation.goBack();
   };
 
   return (
-    <View style={styles.screen}>
-      <View style={styles.header}>
-        <ProgressBar progress={(step + 1) / 3} />
-        <Text style={styles.stepLabel}>Step {step + 1} of 3</Text>
-      </View>
-
-      <ScrollView contentContainerStyle={styles.body}>
+    <View style={styles.root}>
+      <ProgressBar progress={(step + 1) / 3} height={6} />
+      <ScrollView contentContainerStyle={styles.content}>
         {step === 0 && (
-          <>
-            <Text style={styles.question}>Name your recipe</Text>
-            <TextInput value={name} onChangeText={setName} placeholder="Recipe name" placeholderTextColor={colors.textMuted} style={styles.input} />
-            <Text style={styles.subLabel}>Category</Text>
-            <View style={styles.optionRow}>
-              {categories.map((c) => (
-                <Pressable key={c.id} onPress={() => setCategory(c.id)} style={[styles.option, category === c.id && styles.optionSelected]}>
-                  <Text style={[styles.optionText, category === c.id && styles.optionTextSelected]}>{c.label}</Text>
+          <View style={styles.stepGap}>
+            <Text style={styles.stepTitle}>Name your recipe</Text>
+            <TextInput value={name} onChangeText={setName} placeholder="Recipe name" placeholderTextColor={colors.textFaint} style={styles.input} />
+            <Text style={styles.fieldLabel}>Category</Text>
+            <View style={styles.chipRow}>
+              {categoryOptions.map((c) => (
+                <Pressable key={c.id} onPress={() => setCategory(c.id)} style={[styles.chip, category === c.id && styles.chipActive]}>
+                  <Text style={[styles.chipText, category === c.id && styles.chipTextActive]}>{c.label}</Text>
                 </Pressable>
               ))}
             </View>
-            <Text style={styles.subLabel}>Serving size (grams)</Text>
-            <TextInput value={servingSize} onChangeText={setServingSize} keyboardType="number-pad" style={styles.input} />
-          </>
+            <Text style={styles.fieldLabel}>Serving size (g)</Text>
+            <TextInput value={servingSizeG} onChangeText={setServingSizeG} keyboardType="numeric" style={styles.input} />
+          </View>
         )}
 
         {step === 1 && (
-          <>
-            <Text style={styles.question}>Upload a cooking video</Text>
-            <Text style={styles.hint}>Maximum 5 minutes.</Text>
-            <Pressable style={styles.videoPicker} onPress={pickVideo}>
-              <Text style={styles.videoPickerText}>{videoUri ? 'Video selected ✓' : 'Choose video'}</Text>
+          <View style={styles.stepGap}>
+            <Text style={styles.stepTitle}>Show how it's made</Text>
+            <Pressable style={styles.videoBox} onPress={() => setVideoAttached(true)}>
+              <CameraIcon color={colors.primaryBlue} size={28} />
+              <Text style={styles.videoText}>{videoAttached ? 'Video attached' : 'Upload a cooking video (max 5 min)'}</Text>
             </Pressable>
-            <Text style={styles.subLabel}>Ingredients — one per line</Text>
+            <Text style={styles.fieldLabel}>Ingredients — one per line</Text>
             <TextInput
               value={ingredientsText}
               onChangeText={setIngredientsText}
-              multiline
-              numberOfLines={6}
               placeholder={'200g chicken breast\n150g rice\nbroccoli'}
-              placeholderTextColor={colors.textMuted}
+              placeholderTextColor={colors.textFaint}
               style={[styles.input, styles.multiline]}
+              multiline
             />
-          </>
+          </View>
         )}
 
         {step === 2 && (
-          <>
-            <Text style={styles.question}>Ready to share</Text>
-            <Text style={styles.hint}>
-              Meeboo calculates the full nutrition breakdown from your ingredient list automatically — you don't need to count anything.
-            </Text>
-          </>
+          <View style={styles.stepGap}>
+            <Text style={styles.stepTitle}>Meeboo did the math</Text>
+            <Card style={styles.resultCard}>
+              <Text style={styles.resultCalories}>{nutrition.calories} kcal</Text>
+              <Text style={styles.resultSub}>per {servingSizeG}g serving</Text>
+              <View style={styles.macroGrid}>
+                <View style={styles.macroItem}><Text style={styles.macroValue}>{nutrition.proteinG}g</Text><Text style={styles.macroLabel}>Protein</Text></View>
+                <View style={styles.macroItem}><Text style={styles.macroValue}>{nutrition.carbsG}g</Text><Text style={styles.macroLabel}>Carbs</Text></View>
+                <View style={styles.macroItem}><Text style={styles.macroValue}>{nutrition.fatG}g</Text><Text style={styles.macroLabel}>Fat</Text></View>
+              </View>
+            </Card>
+          </View>
         )}
       </ScrollView>
 
       <View style={styles.footer}>
-        {step > 0 && <Button title="Back" onPress={() => setStep(step - 1)} variant="ghost" style={{ flex: 0.4 }} />}
         <Button
-          title={step === 2 ? 'Share recipe' : 'Next'}
-          onPress={() => (step === 2 ? finish() : setStep(step + 1))}
-          style={{ flex: 1 }}
+          title={step === 2 ? 'Share recipe' : 'Continue'}
+          onPress={() => (step === 2 ? finish() : setStep((v) => v + 1))}
+          disabled={step === 0 && !name.trim()}
         />
       </View>
     </View>
@@ -125,27 +115,26 @@ export function UploadRecipeScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.white },
-  header: { paddingTop: 24, paddingHorizontal: spacing.xl, gap: spacing.sm },
-  stepLabel: { ...typography.label },
-  body: { padding: spacing.xl, gap: spacing.md },
-  question: { ...typography.h2 },
-  hint: { ...typography.bodyMuted },
-  subLabel: { ...typography.label, marginTop: spacing.md, marginBottom: spacing.xs },
-  input: {
-    borderWidth: 1.5, borderColor: colors.border, borderRadius: 14,
-    paddingHorizontal: spacing.md, paddingVertical: spacing.md, fontSize: 16, color: colors.deepNavy,
-  },
-  multiline: { height: 120, textAlignVertical: 'top' },
-  optionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  option: { borderWidth: 1.5, borderColor: colors.border, borderRadius: 14, paddingVertical: spacing.sm, paddingHorizontal: spacing.md },
-  optionSelected: { borderColor: colors.primaryBlue, backgroundColor: colors.lightBlueSurface },
-  optionText: { ...typography.body, fontFamily: fontFamilies.semiBold, fontSize: 14 },
-  optionTextSelected: { color: colors.primaryBlue },
-  videoPicker: {
-    height: 140, borderRadius: 16, borderWidth: 2, borderColor: colors.border, borderStyle: 'dashed',
-    alignItems: 'center', justifyContent: 'center', marginBottom: spacing.md,
-  },
-  videoPickerText: { color: colors.primaryBlue, fontFamily: fontFamilies.semiBold },
-  footer: { flexDirection: 'row', gap: spacing.md, padding: spacing.xl },
+  root: { flex: 1, backgroundColor: colors.background },
+  content: { padding: spacing.xl, paddingBottom: spacing.xxxl, maxWidth: 600, width: '100%', alignSelf: 'center' },
+  stepGap: { gap: spacing.md },
+  stepTitle: { ...typography.h2, marginBottom: spacing.sm },
+  fieldLabel: { ...typography.label, marginTop: spacing.sm },
+  input: { backgroundColor: colors.surface, borderRadius: radii.md, padding: spacing.md, fontSize: 15, fontFamily: fontFamilies.medium, color: colors.textPrimary, ...shadow.card },
+  multiline: { minHeight: 120, textAlignVertical: 'top' },
+  chipRow: { flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' },
+  chip: { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: radii.pill, backgroundColor: colors.surfaceMuted },
+  chipActive: { backgroundColor: colors.primaryBlue },
+  chipText: { fontFamily: fontFamilies.semiBold, fontSize: 13, color: colors.textMuted },
+  chipTextActive: { color: colors.white },
+  videoBox: { alignItems: 'center', justifyContent: 'center', gap: spacing.sm, backgroundColor: colors.lightBlueSurface, borderRadius: radii.md, paddingVertical: spacing.xxl, borderWidth: 1.5, borderColor: colors.primaryBlue, borderStyle: 'dashed' },
+  videoText: { fontFamily: fontFamilies.medium, fontSize: 13.5, color: colors.primaryBlue, textAlign: 'center', paddingHorizontal: spacing.xl },
+  resultCard: { alignItems: 'center', paddingVertical: spacing.xl },
+  resultCalories: { fontFamily: fontFamilies.black, fontSize: 34, color: colors.textPrimary },
+  resultSub: { ...typography.bodyMuted, marginTop: 2, marginBottom: spacing.lg },
+  macroGrid: { flexDirection: 'row', gap: spacing.xxl },
+  macroItem: { alignItems: 'center' },
+  macroValue: { fontFamily: fontFamilies.bold, fontSize: 18, color: colors.textPrimary },
+  macroLabel: { ...typography.bodyMuted, fontSize: 12 },
+  footer: { padding: spacing.xl, borderTopWidth: 1, borderTopColor: colors.border },
 });

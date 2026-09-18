@@ -1,66 +1,75 @@
 import { useNavigation } from '@react-navigation/native';
-import React from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
-import { colors } from '../../theme/colors';
-import { spacing } from '../../theme/spacing';
-import { fontFamilies, typography } from '../../theme/typography';
+import { Header } from '../../components/Header';
+import { MuscleGroupIcon } from '../../components/icons';
 import { exerciseById, workoutTemplates } from '../../data/exercises';
-import { useWorkoutStore } from '../../state/workoutStore';
+import { colors } from '../../theme/colors';
+import { radii, spacing } from '../../theme/spacing';
+import { fontFamilies, typography } from '../../theme/typography';
 
 export function TrainScreen() {
   const navigation = useNavigation<any>();
-  const sessions = useWorkoutStore((s) => s.sessions);
-  const lastSession = sessions[sessions.length - 1];
+  const [selected, setSelected] = useState(workoutTemplates[0].id);
+  const template = workoutTemplates.find((t) => t.id === selected)!;
+  const exercises = template.exerciseIds.map((id) => exerciseById(id)!);
 
   return (
-    <View style={styles.screen}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Train</Text>
-        <Text style={styles.subtitle}>Pick today's session. Everything after this happens from your notifications.</Text>
-      </View>
+    <ScrollView style={styles.root} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <Header title="Train" />
 
-      <FlatList
-        contentContainerStyle={styles.list}
-        data={workoutTemplates}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <Card style={styles.templateCard}>
-            <Text style={styles.templateName}>{item.name}</Text>
-            <Text style={styles.templateExercises}>
-              {item.exerciseIds.map((id) => exerciseById(id)?.name).join(' · ')}
-            </Text>
-            <Button
-              title="Start workout"
-              onPress={() => navigation.navigate('WorkoutSession', { templateId: item.id })}
-              style={styles.startBtn}
-            />
-          </Card>
-        )}
-        ItemSeparatorComponent={() => <View style={{ height: spacing.md }} />}
-        ListFooterComponent={
-          lastSession ? (
-            <Pressable onPress={() => navigation.navigate('WorkoutSummary')} style={styles.lastSessionLink}>
-              <Text style={styles.lastSessionText}>View your last workout summary →</Text>
+      <Text style={styles.sectionTitle}>Choose a plan</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.templateRow}>
+        {workoutTemplates.map((t) => {
+          const active = t.id === selected;
+          return (
+            <Pressable key={t.id} onPress={() => setSelected(t.id)} style={[styles.templateChip, active && styles.templateChipActive]}>
+              <Text style={[styles.templateChipText, active && styles.templateChipTextActive]}>{t.name}</Text>
             </Pressable>
-          ) : null
-        }
-      />
-    </View>
+          );
+        })}
+      </ScrollView>
+
+      <Card style={{ marginTop: spacing.lg }}>
+        <Text style={styles.cardTitle}>{template.name}</Text>
+        <Text style={styles.cardMeta}>{exercises.length} exercises</Text>
+        <View style={styles.exerciseList}>
+          {exercises.map((ex) => (
+            <View key={ex.id} style={styles.exerciseRow}>
+              <View style={styles.exerciseIcon}>
+                <MuscleGroupIcon group={ex.muscleGroup} color={colors.primaryBlue} size={16} />
+              </View>
+              <Text style={styles.exerciseName}>{ex.name}</Text>
+              <Text style={styles.exerciseSets}>{ex.defaultSets} × {ex.defaultReps}</Text>
+            </View>
+          ))}
+        </View>
+        <Button
+          title="Start workout"
+          onPress={() => navigation.navigate('WorkoutSession', { templateId: template.id })}
+          style={{ marginTop: spacing.lg }}
+        />
+      </Card>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.white },
-  header: { padding: spacing.xl, paddingTop: 64, gap: spacing.xs },
-  title: { ...typography.h1 },
-  subtitle: { ...typography.bodyMuted },
-  list: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxxl },
-  templateCard: { gap: spacing.sm },
-  templateName: { ...typography.h3 },
-  templateExercises: { ...typography.bodyMuted, fontSize: 13 },
-  startBtn: { marginTop: spacing.sm },
-  lastSessionLink: { paddingVertical: spacing.lg, alignItems: 'center' },
-  lastSessionText: { color: colors.primaryBlue, fontFamily: fontFamilies.semiBold },
+  root: { flex: 1, backgroundColor: colors.background },
+  content: { padding: spacing.xl, paddingBottom: spacing.xxxl, maxWidth: 640, width: '100%', alignSelf: 'center' },
+  sectionTitle: { ...typography.h3, marginBottom: spacing.md },
+  templateRow: { gap: spacing.sm, paddingRight: spacing.xl },
+  templateChip: { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: radii.pill, backgroundColor: colors.surfaceMuted },
+  templateChipActive: { backgroundColor: colors.primaryBlue },
+  templateChipText: { fontFamily: fontFamilies.semiBold, fontSize: 13.5, color: colors.textMuted },
+  templateChipTextActive: { color: colors.white },
+  cardTitle: { ...typography.h2, fontSize: 20 },
+  cardMeta: { ...typography.bodyMuted, marginTop: 2 },
+  exerciseList: { marginTop: spacing.lg, gap: spacing.sm },
+  exerciseRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.xs },
+  exerciseIcon: { width: 34, height: 34, borderRadius: 17, backgroundColor: colors.lightBlueSurface, alignItems: 'center', justifyContent: 'center' },
+  exerciseName: { ...typography.bodyMedium, flex: 1 },
+  exerciseSets: { ...typography.bodyMuted, fontSize: 13.5 },
 });

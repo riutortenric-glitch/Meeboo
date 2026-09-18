@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import { colors } from '../theme/colors';
+import { fontFamilies } from '../theme/typography';
 import { LogMealScreen } from '../screens/nutrition/LogMealScreen';
 import { NutritionScreen } from '../screens/nutrition/NutritionScreen';
 import { RecipeDetailScreen } from '../screens/nutrition/RecipeDetailScreen';
@@ -11,7 +12,14 @@ const Stack = createNativeStackNavigator<NutritionStackParamList>();
 
 export function NutritionNavigator() {
   return (
-    <Stack.Navigator screenOptions={{ headerTintColor: colors.primaryBlue }}>
+    <Stack.Navigator
+      screenOptions={{
+        headerTintColor: colors.primaryBlue,
+        headerStyle: { backgroundColor: colors.background },
+        headerTitleStyle: { fontFamily: fontFamilies.semiBold, fontSize: 16, color: colors.textPrimary },
+        headerShadowVisible: false,
+      }}
+    >
       <Stack.Screen name="NutritionFeed" component={NutritionScreen} options={{ headerShown: false }} />
       <Stack.Screen name="RecipeDetail" component={RecipeDetailScreen} options={{ title: '' }} />
       <Stack.Screen name="UploadRecipe" component={UploadRecipeScreen} options={{ title: 'Share recipe' }} />

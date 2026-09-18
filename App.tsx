@@ -10,7 +10,7 @@ import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { MeebooCharacter } from './src/components/MeebooCharacter';
+import { MeebooFigure } from './src/illustrations/MeebooFigure';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { useUserStore } from './src/state/userStore';
 import { colors } from './src/theme/colors';
@@ -28,7 +28,7 @@ export default function App() {
   if (!hasHydrated || !fontsLoaded) {
     return (
       <View style={styles.loading}>
-        <MeebooCharacter size={100} flameLevel="medium" bodyStage={3} />
+        <MeebooFigure size={100} flameLevel="medium" bodyStage={3} float={false} />
         <ActivityIndicator style={{ marginTop: 16 }} color={colors.primaryBlue} />
       </View>
     );

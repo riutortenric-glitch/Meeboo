@@ -1,213 +1,150 @@
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../components/Button';
+import { Card } from '../../components/Card';
+import { MuscleGroupIcon } from '../../components/icons';
 import { ProgressBar } from '../../components/ProgressBar';
-import { colors } from '../../theme/colors';
-import { spacing } from '../../theme/spacing';
-import { fontFamilies, typography } from '../../theme/typography';
 import { exerciseById, workoutTemplates } from '../../data/exercises';
 import { useWorkoutStore } from '../../state/workoutStore';
-import { TrainStackParamList } from '../../navigation/types';
+import { colors } from '../../theme/colors';
+import { radii, shadow, spacing } from '../../theme/spacing';
+import { fontFamilies, typography } from '../../theme/typography';
 import {
   configureNotificationCategories,
-  ensureAndroidChannel,
   requestNotificationPermission,
   scheduleRestTimer,
 } from '../../utils/notifications';
-
-type Route = RouteProp<TrainStackParamList, 'WorkoutSession'>;
-
-interface QueueItem {
-  exerciseId: string;
-  setNumber: number;
-  totalSets: number;
-  targetReps: number;
-  isLastSetOfExercise: boolean;
-}
 
 const REST_SECONDS = 60;
 
 export function WorkoutSessionScreen() {
   const navigation = useNavigation<any>();
-  const route = useRoute<Route>();
-  const template = workoutTemplates.find((t) => t.id === route.params.templateId)!;
+  const route = useRoute<any>();
+  const { templateId } = route.params;
+  const template = workoutTemplates.find((t) => t.id === templateId)!;
+  const exercises = useMemo(() => template.exerciseIds.map((id) => exerciseById(id)!), [template]);
 
   const startSession = useWorkoutStore((s) => s.startSession);
   const logSet = useWorkoutStore((s) => s.logSet);
   const completeSession = useWorkoutStore((s) => s.completeSession);
 
-  const queue = useMemo<QueueItem[]>(() => {
-    const items: QueueItem[] = [];
-    for (const exerciseId of template.exerciseIds) {
-      const exercise = exerciseById(exerciseId)!;
-      for (let i = 1; i <= exercise.defaultSets; i++) {
-        items.push({
-          exerciseId,
-          setNumber: i,
-          totalSets: exercise.defaultSets,
-          targetReps: exercise.defaultReps,
-          isLastSetOfExercise: i === exercise.defaultSets,
-        });
-      }
-    }
-    return items;
-  }, [template]);
-
-  const [index, setIndex] = useState(0);
+  const [exIdx, setExIdx] = useState(0);
+  const [setIdx, setSetIdx] = useState(0);
   const [resting, setResting] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(REST_SECONDS);
-  const [repsModalVisible, setRepsModalVisible] = useState(false);
-  const [customReps, setCustomReps] = useState(0);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const exercise = exercises[exIdx];
+  const isLastSet = setIdx + 1 >= exercise.defaultSets;
+  const isLastExercise = exIdx + 1 >= exercises.length;
 
   useEffect(() => {
-    startSession(template.id);
-    (async () => {
-      await ensureAndroidChannel();
-      await configureNotificationCategories();
-      await requestNotificationPermission();
-    })();
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    startSession(templateId);
+    requestNotificationPermission().then((granted) => {
+      if (granted) configureNotificationCategories();
+    });
   }, []);
 
-  const current = queue[index];
-  const exercise = current ? exerciseById(current.exerciseId) : undefined;
-  const isFirstSetOfExercise = current?.setNumber === 1;
+  useEffect(() => {
+    if (!resting) return;
+    if (secondsLeft <= 0) {
+      setResting(false);
+      advance();
+      return;
+    }
+    const id = setTimeout(() => setSecondsLeft((v) => v - 1), 1000);
+    return () => clearTimeout(id);
+  }, [resting, secondsLeft]);
 
-  const finishWorkout = () => {
-    completeSession();
-    navigation.replace('WorkoutSummary');
+  const nextExerciseName = () => {
+    if (!isLastSet) return exercise.name;
+    return isLastExercise ? 'Finish' : exercises[exIdx + 1].name;
   };
 
   const advance = () => {
-    if (index + 1 >= queue.length) {
-      finishWorkout();
-      return;
+    if (!isLastSet) {
+      setSetIdx((v) => v + 1);
+    } else if (!isLastExercise) {
+      setExIdx((v) => v + 1);
+      setSetIdx(0);
+    } else {
+      completeSession();
+      navigation.replace('WorkoutSummary');
     }
-    if (current.isLastSetOfExercise) {
-      setIndex(index + 1);
-      return;
-    }
-    startRest();
   };
 
-  const startRest = () => {
-    setResting(true);
+  const logAndRest = (reps: number) => {
+    logSet(exercise.id, reps, undefined);
+    if (isLastSet && isLastExercise) {
+      completeSession();
+      navigation.replace('WorkoutSummary');
+      return;
+    }
+    scheduleRestTimer(REST_SECONDS, nextExerciseName());
     setSecondsLeft(REST_SECONDS);
-    const nextName = exerciseById(queue[index + 1]?.exerciseId ?? '')?.name ?? 'next exercise';
-    scheduleRestTimer(REST_SECONDS, nextName).catch(() => {});
-    timerRef.current = setInterval(() => {
-      setSecondsLeft((prev) => {
-        if (prev <= 1) {
-          if (timerRef.current) clearInterval(timerRef.current);
-          setResting(false);
-          setIndex((i) => i + 1);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    setResting(true);
   };
 
-  const skipRest = () => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    setResting(false);
-    setIndex((i) => i + 1);
-  };
-
-  const handleDone = () => {
-    logSet(current.exerciseId, current.targetReps);
-    advance();
-  };
-
-  const handleDifferentReps = () => {
-    setCustomReps(current.targetReps);
-    setRepsModalVisible(true);
-  };
-
-  const confirmCustomReps = () => {
-    logSet(current.exerciseId, customReps);
-    setRepsModalVisible(false);
-    advance();
-  };
-
-  if (!current) return null;
-
-  if (resting) {
-    const nextName = exerciseById(queue[index + 1]?.exerciseId ?? '')?.name;
-    return (
-      <View style={styles.restScreen}>
-        <Text style={styles.restLabel}>Resting…</Text>
-        <Text style={styles.restTimer}>{secondsLeft}s</Text>
-        {nextName ? <Text style={styles.restNext}>Next set: {nextName}</Text> : null}
-        <Button title="Skip rest" onPress={skipRest} variant="secondary" style={{ marginTop: spacing.xl }} />
-      </View>
-    );
-  }
+  const totalSetsPlanned = exercises.reduce((sum, e) => sum + e.defaultSets, 0);
+  const setsDoneSoFar = exercises.slice(0, exIdx).reduce((sum, e) => sum + e.defaultSets, 0) + setIdx;
 
   return (
-    <View style={styles.screen}>
-      <View style={styles.progressWrap}>
-        <ProgressBar progress={(index + 1) / queue.length} />
-        <Text style={styles.progressLabel}>Set {index + 1} of {queue.length}</Text>
+    <View style={styles.root}>
+      <View style={styles.topBar}>
+        <ProgressBar progress={setsDoneSoFar / totalSetsPlanned} height={6} />
+        <Text style={styles.topBarText}>
+          Exercise {exIdx + 1} of {exercises.length}
+        </Text>
       </View>
 
-      <View style={styles.body}>
-        {isFirstSetOfExercise && index > 0 ? <Text style={styles.transition}>Next up</Text> : null}
-        <Text style={styles.exerciseName}>{exercise?.name}</Text>
-        <Text style={styles.setInfo}>Set {current.setNumber} of {current.totalSets} · {current.targetReps} reps</Text>
-        <Text style={styles.readyText}>Ready when you are.</Text>
-      </View>
+      {resting ? (
+        <View style={styles.restWrap}>
+          <Text style={styles.restLabel}>Resting…</Text>
+          <Text style={styles.restTimer}>{secondsLeft}s</Text>
+          <Text style={styles.restNext}>Next: {nextExerciseName()}</Text>
+          <Pressable onPress={() => { setResting(false); advance(); }} style={styles.skipBtn}>
+            <Text style={styles.skipBtnText}>Skip rest</Text>
+          </Pressable>
+        </View>
+      ) : (
+        <View style={styles.sessionWrap}>
+          <View style={styles.exerciseIconBig}>
+            <MuscleGroupIcon group={exercise.muscleGroup} color={colors.primaryBlue} size={32} />
+          </View>
+          <Text style={styles.exerciseName}>{exercise.name}</Text>
+          <Text style={styles.setLabel}>
+            Set {setIdx + 1} of {exercise.defaultSets} · {exercise.defaultReps} reps
+          </Text>
 
-      <View style={styles.actions}>
-        <Button title="Different reps" onPress={handleDifferentReps} variant="secondary" style={{ flex: 1 }} />
-        <Button title="Done" onPress={handleDone} style={{ flex: 1 }} />
-      </View>
+          <Card style={styles.readyCard}>
+            <Text style={styles.readyText}>Ready when you are.</Text>
+          </Card>
 
-      <Modal transparent visible={repsModalVisible} animationType="fade">
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>How many reps?</Text>
-            <View style={styles.repsPicker}>
-              <Pressable style={styles.repsBtn} onPress={() => setCustomReps(Math.max(0, customReps - 1))}>
-                <Text style={styles.repsBtnText}>-</Text>
-              </Pressable>
-              <Text style={styles.repsValue}>{customReps}</Text>
-              <Pressable style={styles.repsBtn} onPress={() => setCustomReps(customReps + 1)}>
-                <Text style={styles.repsBtnText}>+</Text>
-              </Pressable>
-            </View>
-            <Button title="Log set" onPress={confirmCustomReps} />
+          <View style={styles.actionRow}>
+            <Button title="Different reps" variant="secondary" onPress={() => logAndRest(Math.max(1, exercise.defaultReps - 2))} style={{ flex: 1 }} />
+            <Button title="Done" onPress={() => logAndRest(exercise.defaultReps)} style={{ flex: 1 }} />
           </View>
         </View>
-      </Modal>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.white, justifyContent: 'space-between' },
-  progressWrap: { padding: spacing.xl, paddingTop: 64, gap: spacing.sm },
-  progressLabel: { ...typography.label },
-  body: { alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.xl },
-  transition: { ...typography.label, color: colors.primaryBlue },
-  exerciseName: { ...typography.h1, textAlign: 'center' },
-  setInfo: { ...typography.body, color: colors.textMuted },
-  readyText: { ...typography.bodyMuted, marginTop: spacing.lg },
-  actions: { flexDirection: 'row', gap: spacing.md, padding: spacing.xl },
-  restScreen: { flex: 1, backgroundColor: colors.deepNavy, alignItems: 'center', justifyContent: 'center', gap: spacing.sm },
-  restLabel: { ...typography.h3, color: colors.white },
-  restTimer: { fontSize: 64, fontFamily: fontFamilies.bold, color: colors.white },
-  restNext: { ...typography.body, color: colors.white, opacity: 0.8 },
-  modalBackdrop: { flex: 1, backgroundColor: 'rgba(12,48,96,0.5)', alignItems: 'center', justifyContent: 'center' },
-  modalCard: { backgroundColor: colors.white, borderRadius: 20, padding: spacing.xl, width: '80%', gap: spacing.lg, alignItems: 'center' },
-  modalTitle: { ...typography.h3 },
-  repsPicker: { flexDirection: 'row', alignItems: 'center', gap: spacing.xl },
-  repsBtn: { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.lightBlueSurface, alignItems: 'center', justifyContent: 'center' },
-  repsBtnText: { fontSize: 24, fontFamily: fontFamilies.bold, color: colors.primaryBlue },
-  repsValue: { fontSize: 32, fontFamily: fontFamilies.bold, minWidth: 60, textAlign: 'center' },
+  root: { flex: 1, backgroundColor: colors.background, padding: spacing.xl },
+  topBar: { gap: spacing.sm, marginTop: spacing.md },
+  topBarText: { ...typography.bodyMuted, textAlign: 'center' },
+  sessionWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing.sm },
+  exerciseIconBig: { width: 84, height: 84, borderRadius: 42, backgroundColor: colors.lightBlueSurface, alignItems: 'center', justifyContent: 'center', marginBottom: spacing.md },
+  exerciseName: { ...typography.h1, fontSize: 26, textAlign: 'center' },
+  setLabel: { ...typography.bodyMuted, fontSize: 16 },
+  readyCard: { marginTop: spacing.xl, marginBottom: spacing.xl, paddingVertical: spacing.xl, alignItems: 'center', width: '100%' },
+  readyText: { ...typography.bodyLarge, color: colors.textMuted },
+  actionRow: { flexDirection: 'row', gap: spacing.md, width: '100%' },
+  restWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing.sm },
+  restLabel: { ...typography.h3, color: colors.textMuted },
+  restTimer: { fontFamily: fontFamilies.black, fontSize: 72, color: colors.primaryBlue, letterSpacing: -1 },
+  restNext: { ...typography.bodyMuted, fontSize: 16, marginBottom: spacing.xl },
+  skipBtn: { paddingVertical: spacing.sm, paddingHorizontal: spacing.lg, borderRadius: radii.pill, backgroundColor: colors.surfaceMuted, ...shadow.subtle },
+  skipBtnText: { fontFamily: fontFamilies.semiBold, fontSize: 14, color: colors.textMuted },
 });

@@ -1,4 +1,4 @@
-import { FlameLevel } from '../components/MeebooFlame';
+import { FlameLevel } from '../illustrations/MeebooFlame';
 import { WorkoutSession } from '../types';
 
 /**

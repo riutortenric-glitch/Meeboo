@@ -1,100 +1,100 @@
 import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { BadgeIcon } from '../../components/BadgeIcon';
 import { Card } from '../../components/Card';
-import { MeebooCharacter } from '../../components/MeebooCharacter';
+import { Header } from '../../components/Header';
+import { MuscleGroupIcon } from '../../components/icons';
 import { ProgressBar } from '../../components/ProgressBar';
-import { colors } from '../../theme/colors';
-import { shadow, spacing } from '../../theme/spacing';
-import { fontFamilies, typography } from '../../theme/typography';
-import { muscleGroups, nextTierForSets, tierForSets } from '../../data/badges';
+import { badgeTiers, muscleGroups, nextTierForSets, tierForSets } from '../../data/badges';
+import { Badge3D } from '../../illustrations/Badge3D';
+import { MeebooFigure } from '../../illustrations/MeebooFigure';
 import { useUserStore } from '../../state/userStore';
 import { useWorkoutStore } from '../../state/workoutStore';
-import { computeFlameLevel } from '../../utils/flame';
-import { bmiCategoryLabel } from '../../utils/bodyType';
+import { colors } from '../../theme/colors';
+import { radii, shadow, spacing } from '../../theme/spacing';
+import { fontFamilies, typography } from '../../theme/typography';
+import { usesMuscleScale } from '../../utils/bodyType';
 
 export function ProgressScreen() {
   const navigation = useNavigation<any>();
   const profile = useUserStore((s) => s.profile);
-  const sessions = useWorkoutStore((s) => s.sessions);
-  const setsForMuscleGroup = useWorkoutStore((s) => s.setsForMuscleGroup);
-  const totalSessions = useWorkoutStore((s) => s.totalCompletedSessions());
+  const workout = useWorkoutStore();
+  const track = usesMuscleScale(profile?.goal ?? 'build_muscle') ? 'muscle' : 'fat';
 
-  const flameLevel = computeFlameLevel(sessions);
+  const rows = muscleGroups.map((g) => {
+    const sets = workout.setsForMuscleGroup(g.id);
+    const tier = tierForSets(sets);
+    const next = nextTierForSets(sets);
+    const progress = next ? (sets - tier.minSets) / (next.minSets - tier.minSets) : 1;
+    return { ...g, sets, tier, next, progress };
+  });
+
+  const totalSets = rows.reduce((sum, r) => sum + r.sets, 0);
+  const badgesEarned = rows.filter((r) => r.tier.tier !== 'stone').length;
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <View style={styles.hero}>
-        <MeebooCharacter size={140} flameLevel={flameLevel} bodyStage={profile?.bodyStageIndex ?? 3} goal={profile?.goal} />
-        <Text style={styles.name}>{profile?.name ?? 'You'}</Text>
-        {profile ? (
-          <Text style={styles.meta}>BMI {profile.bmi.toFixed(1)} · {bmiCategoryLabel(profile.bmi)}</Text>
-        ) : null}
-      </View>
+    <ScrollView style={styles.root} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <Header title="Progress" />
 
-      <View style={styles.countersRow}>
-        <Card style={styles.counterCard}>
-          <Text style={styles.counterValue}>{totalSessions}</Text>
-          <Text style={styles.counterLabel}>Workouts</Text>
-        </Card>
-        <Card style={styles.counterCard}>
-          <Text style={styles.counterValue}>
-            {muscleGroups.reduce((sum, g) => sum + setsForMuscleGroup(g.id), 0)}
-          </Text>
-          <Text style={styles.counterLabel}>Total sets</Text>
-        </Card>
-      </View>
+      <Card style={styles.avatarCard}>
+        <MeebooFigure size={120} bodyStage={profile?.bodyStageIndex ?? 3} track={track} flameLevel="large" float={false} />
+        <Text style={styles.goalLabel}>{track === 'muscle' ? 'Building muscle' : 'Getting leaner'}</Text>
+        <View style={styles.countRow}>
+          <View style={styles.countItem}>
+            <Text style={styles.countValue}>{totalSets}</Text>
+            <Text style={styles.countLabel}>Total sets</Text>
+          </View>
+          <View style={styles.countDivider} />
+          <View style={styles.countItem}>
+            <Text style={styles.countValue}>{badgesEarned}</Text>
+            <Text style={styles.countLabel}>Badges earned</Text>
+          </View>
+        </View>
+      </Card>
 
       <Text style={styles.sectionTitle}>Muscle badges</Text>
       <View style={styles.grid}>
-        {muscleGroups.map((g) => {
-          const sets = setsForMuscleGroup(g.id);
-          const tier = tierForSets(sets);
-          const next = nextTierForSets(sets);
-          const progress = next ? (sets - tier.minSets) / (next.minSets - tier.minSets) : 1;
-          return (
-            <Pressable
-              key={g.id}
-              style={styles.badgeCard}
-              onPress={() => navigation.navigate('BadgeDetail', { muscleGroup: g.id })}
-            >
-              <BadgeIcon tier={tier.tier} size={52} />
-              <Text style={styles.badgeMuscle}>{g.label}</Text>
-              <Text style={styles.badgeTier}>{tier.label}</Text>
-              <ProgressBar progress={progress} height={5} />
-              <Text style={styles.badgeSub}>{next ? `${next.minSets - sets} sets to ${next.label}` : 'Max tier'}</Text>
-            </Pressable>
-          );
-        })}
+        {rows.map((r) => (
+          <Pressable key={r.id} style={styles.badgeCard} onPress={() => navigation.navigate('BadgeDetail', { muscleGroup: r.id })}>
+            <Badge3D tier={r.tier.tier} size={56} />
+            <View style={styles.badgeLabelRow}>
+              <MuscleGroupIcon group={r.id} color={colors.textMuted} size={13} />
+              <Text style={styles.badgeLabel}>{r.label}</Text>
+            </View>
+            <Text style={styles.badgeTier}>{r.tier.label}</Text>
+            <View style={{ width: '100%', marginTop: spacing.xs }}>
+              <ProgressBar progress={r.progress} height={5} />
+            </View>
+            <Text style={styles.badgeSets}>{r.next ? `${r.next.minSets - r.sets} sets to ${r.next.label}` : 'Max tier'}</Text>
+          </Pressable>
+        ))}
       </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.white },
-  content: { padding: spacing.xl, paddingTop: 64, paddingBottom: spacing.xxxl, gap: spacing.lg },
-  hero: { alignItems: 'center' },
-  name: { ...typography.h2, marginTop: spacing.sm },
-  meta: { ...typography.bodyMuted, marginTop: 2 },
-  countersRow: { flexDirection: 'row', gap: spacing.md },
-  counterCard: { flex: 1, alignItems: 'center' },
-  counterValue: { ...typography.h2 },
-  counterLabel: { ...typography.label, marginTop: 2 },
-  sectionTitle: { ...typography.h3 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, justifyContent: 'space-between' },
+  root: { flex: 1, backgroundColor: colors.background },
+  content: { padding: spacing.xl, paddingBottom: spacing.xxxl, maxWidth: 720, width: '100%', alignSelf: 'center' },
+  avatarCard: { alignItems: 'center', paddingVertical: spacing.xxl },
+  goalLabel: { ...typography.bodyMuted, marginTop: spacing.sm },
+  countRow: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.lg, gap: spacing.xxl },
+  countItem: { alignItems: 'center' },
+  countValue: { ...typography.h1, fontSize: 26 },
+  countLabel: { ...typography.bodyMuted, fontSize: 12.5 },
+  countDivider: { width: 1, height: 32, backgroundColor: colors.border },
+  sectionTitle: { ...typography.h3, marginTop: spacing.xl, marginBottom: spacing.md },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
   badgeCard: {
     width: '47%',
-    backgroundColor: colors.white,
-    borderRadius: 20,
-    padding: spacing.md,
-    paddingTop: spacing.lg,
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    padding: spacing.lg,
     alignItems: 'center',
-    gap: 4,
     ...shadow.card,
   },
-  badgeMuscle: { ...typography.body, fontFamily: fontFamilies.bold, marginTop: spacing.xs },
-  badgeTier: { ...typography.bodyMuted, fontSize: 13, marginBottom: spacing.xs },
-  badgeSub: { ...typography.bodyMuted, fontSize: 11, marginTop: 4, textAlign: 'center' },
+  badgeLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: spacing.sm },
+  badgeLabel: { fontFamily: fontFamilies.semiBold, fontSize: 14.5, color: colors.textPrimary },
+  badgeTier: { fontFamily: fontFamilies.medium, fontSize: 12, color: colors.textMuted, marginBottom: spacing.xs },
+  badgeSets: { fontFamily: fontFamilies.regular, fontSize: 11.5, color: colors.textFaint, marginTop: spacing.xs, textAlign: 'center' },
 });
