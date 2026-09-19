@@ -10,7 +10,7 @@ import { useWorkoutStore } from '../../state/workoutStore';
 import { colors } from '../../theme/colors';
 import { radii, spacing } from '../../theme/spacing';
 import { fontFamilies, typography } from '../../theme/typography';
-import { bmiCategoryLabel, sexLabel, usesMuscleScale } from '../../utils/bodyType';
+import { bmiCategoryLabel, sexLabel, tintForSex, usesMuscleScale } from '../../utils/bodyType';
 
 const goalLabels: Record<string, string> = {
   lose_fat: 'Lose fat',
@@ -76,7 +76,7 @@ export function ProfileScreen() {
 
       <Card style={styles.profileCard}>
         <View style={styles.avatarWrap}>
-          <MeebooFigure size={56} bodyStage={profile.bodyStageIndex} track={track} flameLevel="medium" float={false} />
+          <MeebooFigure size={56} bodyStage={profile.bodyStageIndex} track={track} flameLevel="medium" float={false} tint={tintForSex(profile.sex)} />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.profileEyebrow}>Your Meeboo profile</Text>

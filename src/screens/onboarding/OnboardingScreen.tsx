@@ -1,69 +1,58 @@
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { BodyTypeCarousel } from '../../components/BodyTypeCarousel';
 import { Button } from '../../components/Button';
-import { ChevronLeftIcon } from '../../components/icons';
+import { GaugeDial } from '../../components/GaugeDial';
+import { ChevronLeftIcon, HomeIcon, MountainIcon, SparkleIcon, TrainIcon } from '../../components/icons';
+import { MetricDial } from '../../components/MetricDial';
 import { ProgressBar } from '../../components/ProgressBar';
-import { MeebooHead } from '../../illustrations/MeebooFigure';
+import { GradientScreen } from '../../components/GradientScreen';
+import { MeebooBlob } from '../../illustrations/MeebooBlob';
+import { bodyStageLabels } from '../../illustrations/meebooGeometry';
 import { useUserStore } from '../../state/userStore';
 import { colors } from '../../theme/colors';
-import { radii, shadow, spacing } from '../../theme/spacing';
+import { radii, spacing } from '../../theme/spacing';
 import { fontFamilies, typography } from '../../theme/typography';
 import { Challenge, Goal, Sex, TrainingType, UnitSystem } from '../../types';
-import { bmiCategoryLabel, calculateBmi, calculateStartingBodyStage } from '../../utils/bodyType';
+import { bmiCategoryLabel, calculateBmi, usesMuscleScale } from '../../utils/bodyType';
 
 interface Draft {
   name: string;
-  units: UnitSystem;
   sex: Sex;
+  units: UnitSystem;
+  goal: Goal | null;
   age: number;
   heightCm: number;
   weightKg: number;
-  goal: Goal | null;
+  currentBodyIndex: number;
+  goalBodyIndex: number;
+  trainingDaysPerWeek: number;
   trainingType: TrainingType | null;
-  trainingDaysPerWeek: number | null;
   biggestChallenge: Challenge | null;
 }
 
 const initialDraft: Draft = {
   name: '',
-  units: 'metric',
   sex: 'male',
+  units: 'metric',
+  goal: null,
   age: 25,
   heightCm: 175,
   weightKg: 75,
-  goal: null,
+  currentBodyIndex: 3,
+  goalBodyIndex: 6,
+  trainingDaysPerWeek: 3,
   trainingType: null,
-  trainingDaysPerWeek: null,
   biggestChallenge: null,
 };
 
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 9;
 
-function Stepper({ value, onChange, step = 1, suffix = '' }: { value: number; onChange: (v: number) => void; step?: number; suffix?: string }) {
-  return (
-    <View style={s.stepperRow}>
-      <Pressable style={s.stepperBtn} onPress={() => onChange(Math.round((value - step) * 10) / 10)}>
-        <Text style={s.stepperBtnText}>–</Text>
-      </Pressable>
-      <Text style={s.stepperValue}>
-        {value}
-        <Text style={s.stepperSuffix}>{suffix}</Text>
-      </Text>
-      <Pressable style={s.stepperBtn} onPress={() => onChange(Math.round((value + step) * 10) / 10)}>
-        <Text style={s.stepperBtnText}>+</Text>
-      </Pressable>
-    </View>
-  );
-}
-
-function OptionCard({ label, sublabel, selected, onPress }: { label: string; sublabel?: string; selected: boolean; onPress: () => void }) {
+function OptionCard({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
   return (
     <Pressable style={[s.option, selected && s.optionSelected]} onPress={onPress}>
       <View style={[s.radio, selected && s.radioSelected]}>{selected && <View style={s.radioDot} />}</View>
-      <View style={{ flex: 1 }}>
-        <Text style={[s.optionLabel, selected && s.optionLabelSelected]}>{label}</Text>
-        {sublabel ? <Text style={s.optionSublabel}>{sublabel}</Text> : null}
-      </View>
+      <Text style={[s.optionLabel, selected && s.optionLabelSelected]}>{label}</Text>
     </Pressable>
   );
 }
@@ -76,18 +65,18 @@ export function OnboardingScreen() {
   const patch = (p: Partial<Draft>) => setDraft((d) => ({ ...d, ...p }));
 
   const bmi = useMemo(() => calculateBmi(draft.heightCm, draft.weightKg), [draft.heightCm, draft.weightKg]);
+  const track = draft.goal ? (usesMuscleScale(draft.goal) ? 'muscle' : 'fat') : 'muscle';
+  const tint = draft.sex === 'female' ? 'pink' : 'blue';
 
   const canAdvance = useMemo(() => {
     switch (step) {
       case 0:
         return draft.name.trim().length > 0;
-      case 4:
+      case 3:
         return !!draft.goal;
-      case 5:
-        return !!draft.trainingType;
-      case 6:
-        return !!draft.trainingDaysPerWeek;
       case 7:
+        return !!draft.trainingType;
+      case 8:
         return !!draft.biggestChallenge;
       default:
         return true;
@@ -95,12 +84,12 @@ export function OnboardingScreen() {
   }, [step, draft]);
 
   const finish = () => {
-    if (!draft.goal || !draft.trainingType || !draft.trainingDaysPerWeek || !draft.biggestChallenge) return;
+    if (!draft.goal || !draft.trainingType || !draft.biggestChallenge) return;
     const computedBmi = calculateBmi(draft.heightCm, draft.weightKg);
     setProfile({
       name: draft.name.trim(),
-      units: draft.units,
       sex: draft.sex,
+      units: draft.units,
       age: draft.age,
       heightCm: draft.heightCm,
       weightKg: draft.weightKg,
@@ -109,92 +98,96 @@ export function OnboardingScreen() {
       trainingDaysPerWeek: draft.trainingDaysPerWeek,
       biggestChallenge: draft.biggestChallenge,
       bmi: computedBmi,
-      bodyStageIndex: calculateStartingBodyStage(computedBmi, draft.goal),
+      bodyStageIndex: draft.currentBodyIndex,
+      goalBodyStageIndex: draft.goalBodyIndex,
       onboardingComplete: true,
     });
   };
 
-  const next = () => {
-    if (step === TOTAL_STEPS - 1) {
-      finish();
-    } else {
-      setStep((v) => v + 1);
-    }
-  };
-
-  const questions = [
-    "Hey, I'm Meeboo. What should I call you?",
-    'Which units do you use?',
-    "Tell me a bit about you — this shapes your calorie targets.",
-    "Now your height and weight — used to set your starting point.",
-    "What's your main goal right now?",
-    'How do you usually train?',
-    'How many days a week can you commit?',
-    "What's held you back the most before?",
-  ];
+  const next = () => (step === TOTAL_STEPS - 1 ? finish() : setStep((v) => v + 1));
 
   return (
-    <View style={s.root}>
+    <GradientScreen>
       <View style={s.topBar}>
         {step > 0 ? (
           <Pressable onPress={() => setStep((v) => v - 1)} style={s.backBtn}>
-            <ChevronLeftIcon color={colors.textMuted} size={20} />
+            <ChevronLeftIcon color={colors.white} size={20} />
           </Pressable>
         ) : (
           <View style={s.backBtn} />
         )}
         <View style={{ flex: 1 }}>
-          <ProgressBar progress={(step + 1) / TOTAL_STEPS} height={6} />
+          <ProgressBar progress={(step + 1) / TOTAL_STEPS} height={6} color={colors.white} trackColor="rgba(255,255,255,0.22)" />
         </View>
       </View>
 
       <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
-        <View style={s.meebooRow}>
-          <MeebooHead size={44} />
-          <View style={s.bubble}>
-            <Text style={s.bubbleText}>{questions[step]}</Text>
-          </View>
-        </View>
-
         {step === 0 && (
-          <TextInput
-            value={draft.name}
-            onChangeText={(v) => patch({ name: v })}
-            placeholder="Your name"
-            placeholderTextColor={colors.textFaint}
-            style={s.input}
-            autoFocus
-          />
+          <View style={s.centerStep}>
+            <MeebooBlob size={90} float={false} />
+            <Text style={s.question}>Hey, I'm Meeboo.{'\n'}What should I call you?</Text>
+            <TextInput
+              value={draft.name}
+              onChangeText={(v) => patch({ name: v })}
+              placeholder="Your name"
+              placeholderTextColor="rgba(255,255,255,0.5)"
+              style={s.input}
+              autoFocus
+            />
+          </View>
         )}
 
         {step === 1 && (
-          <View style={s.rowGap}>
-            {(['metric', 'imperial'] as UnitSystem[]).map((u) => (
-              <OptionCard key={u} label={u === 'metric' ? 'Metric (kg / cm)' : 'Imperial (lbs / ft)'} selected={draft.units === u} onPress={() => patch({ units: u })} />
-            ))}
+          <View style={s.centerStep}>
+            <Text style={s.eyebrow}>Profile Quiz: Step 1</Text>
+            <Text style={s.question}>Are you male or female?</Text>
+            <View style={s.sexRow}>
+              {(['male', 'female'] as Sex[]).map((sx) => (
+                <Pressable key={sx} onPress={() => patch({ sex: sx })} style={[s.sexCard, draft.sex === sx && s.sexCardActive]}>
+                  <MeebooBlob size={78} float={false} tint={sx === 'female' ? 'pink' : 'blue'} />
+                  <Text style={s.sexCardLabel}>{sx === 'male' ? 'MALE' : 'FEMALE'}</Text>
+                </Pressable>
+              ))}
+            </View>
           </View>
         )}
 
         {step === 2 && (
-          <View style={s.rowGap}>
-            <View style={s.sexRow}>
-              {(['male', 'female', 'other'] as Sex[]).map((sx) => (
-                <Pressable key={sx} onPress={() => patch({ sex: sx })} style={[s.sexPill, draft.sex === sx && s.sexPillActive]}>
-                  <Text style={[s.sexPillText, draft.sex === sx && s.sexPillTextActive]}>{sx[0].toUpperCase() + sx.slice(1)}</Text>
-                </Pressable>
+          <View style={s.centerStep}>
+            <Text style={s.question}>Which units do you use?</Text>
+            <View style={s.rowGap}>
+              {(['metric', 'imperial'] as UnitSystem[]).map((u) => (
+                <OptionCard key={u} label={u === 'metric' ? 'Metric (kg / cm)' : 'Imperial (lbs / ft)'} selected={draft.units === u} onPress={() => patch({ units: u })} />
               ))}
             </View>
-            <Text style={s.fieldLabel}>Age</Text>
-            <Stepper value={draft.age} onChange={(v) => patch({ age: Math.max(12, Math.min(80, v)) })} />
           </View>
         )}
 
         {step === 3 && (
-          <View style={s.rowGap}>
-            <Text style={s.fieldLabel}>Height (cm)</Text>
-            <Stepper value={draft.heightCm} onChange={(v) => patch({ heightCm: Math.max(120, Math.min(220, v)) })} suffix=" cm" />
-            <Text style={s.fieldLabel}>Weight (kg)</Text>
-            <Stepper value={draft.weightKg} onChange={(v) => patch({ weightKg: Math.max(35, Math.min(200, v)) })} step={0.5} suffix=" kg" />
+          <View style={s.centerStep}>
+            <Text style={s.question}>What's your main goal right now?</Text>
+            <View style={s.rowGap}>
+              {[
+                { v: 'lose_fat' as Goal, label: 'Lose fat' },
+                { v: 'build_muscle' as Goal, label: 'Build muscle' },
+                { v: 'both' as Goal, label: 'Both' },
+                { v: 'be_healthier' as Goal, label: 'Just be healthier' },
+              ].map((o) => (
+                <OptionCard key={o.v} label={o.label} selected={draft.goal === o.v} onPress={() => patch({ goal: o.v })} />
+              ))}
+            </View>
+          </View>
+        )}
+
+        {step === 4 && (
+          <View>
+            <Text style={s.eyebrow}>Profile Quiz: Advanced Setup</Text>
+            <Text style={[s.question, { marginBottom: spacing.xl }]}>Tell us your stats — we'll use it for your plans.</Text>
+            <View style={{ gap: spacing.xxl }}>
+              <MetricDial label="Select your height" value={draft.heightCm} onChange={(v) => patch({ heightCm: v })} min={120} max={220} unit="cm" />
+              <MetricDial label="Select your weight" value={draft.weightKg} onChange={(v) => patch({ weightKg: v })} min={35} max={180} unit="kg" />
+              <MetricDial label="Select your age" value={draft.age} onChange={(v) => patch({ age: v })} min={12} max={80} unit="yrs" />
+            </View>
             <View style={s.bmiCard}>
               <Text style={s.bmiValue}>{bmi.toFixed(1)}</Text>
               <Text style={s.bmiLabel}>BMI · {bmiCategoryLabel(bmi)}</Text>
@@ -202,120 +195,131 @@ export function OnboardingScreen() {
           </View>
         )}
 
-        {step === 4 && (
-          <View style={s.rowGap}>
-            {[
-              { v: 'lose_fat' as Goal, label: 'Lose fat' },
-              { v: 'build_muscle' as Goal, label: 'Build muscle' },
-              { v: 'both' as Goal, label: 'Both' },
-              { v: 'be_healthier' as Goal, label: 'Just be healthier' },
-            ].map((o) => (
-              <OptionCard key={o.v} label={o.label} selected={draft.goal === o.v} onPress={() => patch({ goal: o.v })} />
-            ))}
-          </View>
-        )}
-
         {step === 5 && (
-          <View style={s.rowGap}>
-            {[
-              { v: 'gym' as TrainingType, label: 'Full gym' },
-              { v: 'home' as TrainingType, label: 'Home with equipment' },
-              { v: 'none' as TrainingType, label: 'No equipment' },
-              { v: 'outdoor' as TrainingType, label: 'Outdoor sports' },
-              { v: 'mix' as TrainingType, label: 'A mix' },
-            ].map((o) => (
-              <OptionCard key={o.v} label={o.label} selected={draft.trainingType === o.v} onPress={() => patch({ trainingType: o.v })} />
-            ))}
+          <View style={s.centerStep}>
+            <Text style={s.question}>What is your current body type?</Text>
+            <BodyTypeCarousel track={track} tint={tint} index={draft.currentBodyIndex} onChange={(i) => patch({ currentBodyIndex: i })} labels={bodyStageLabels[track]} />
+            <Text style={s.hint}>Swipe with the arrows to choose the image that best represents you.</Text>
           </View>
         )}
 
         {step === 6 && (
-          <View style={s.daysRow}>
-            {[2, 3, 4, 5, 6].map((d) => (
-              <Pressable key={d} onPress={() => patch({ trainingDaysPerWeek: d })} style={[s.dayCircle, draft.trainingDaysPerWeek === d && s.dayCircleActive]}>
-                <Text style={[s.dayCircleText, draft.trainingDaysPerWeek === d && s.dayCircleTextActive]}>{d}</Text>
-              </Pressable>
-            ))}
+          <View style={s.centerStep}>
+            <Text style={s.question}>What would you like your body to look like?</Text>
+            <BodyTypeCarousel track={track} tint={tint} index={draft.goalBodyIndex} onChange={(i) => patch({ goalBodyIndex: i })} labels={bodyStageLabels[track]} />
+            <Text style={s.hint}>This is your goal — Meeboo will grow toward it as you train.</Text>
           </View>
         )}
 
         {step === 7 && (
-          <View style={s.rowGap}>
-            {[
-              { v: 'consistency' as Challenge, label: 'Staying consistent' },
-              { v: 'results' as Challenge, label: 'Not seeing results' },
-              { v: 'motivation' as Challenge, label: 'Motivation' },
-              { v: 'no_plan' as Challenge, label: 'Not knowing what to do' },
-              { v: 'nutrition' as Challenge, label: 'Eating well' },
-              { v: 'time' as Challenge, label: 'Finding time' },
-            ].map((o) => (
-              <OptionCard key={o.v} label={o.label} selected={draft.biggestChallenge === o.v} onPress={() => patch({ biggestChallenge: o.v })} />
-            ))}
+          <View style={s.centerStep}>
+            <Text style={s.eyebrow}>Workout Baseline</Text>
+            <GaugeDial label="Weekly workouts" value={draft.trainingDaysPerWeek} max={6} onChange={(v) => patch({ trainingDaysPerWeek: v })} />
+            <Text style={[s.question, { marginTop: spacing.xxl, marginBottom: spacing.md }]}>Where do you train?</Text>
+            <View style={s.locationGrid}>
+              {[
+                { v: 'home' as TrainingType, label: 'Home', Icon: HomeIcon },
+                { v: 'gym' as TrainingType, label: 'Gym', Icon: TrainIcon },
+                { v: 'outdoor' as TrainingType, label: 'Outdoors/Sport', Icon: MountainIcon },
+                { v: 'none' as TrainingType, label: 'First time', Icon: SparkleIcon },
+              ].map(({ v, label, Icon }) => {
+                const active = draft.trainingType === v;
+                return (
+                  <Pressable key={v} onPress={() => patch({ trainingType: v })} style={[s.locationCard, active && s.locationCardActive]}>
+                    <Icon color={active ? colors.primaryBlue : colors.white} size={20} />
+                    <Text style={[s.locationLabel, active && s.locationLabelActive]}>{label}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        )}
+
+        {step === 8 && (
+          <View style={s.centerStep}>
+            <Text style={s.question}>What's held you back the most before?</Text>
+            <View style={s.rowGap}>
+              {[
+                { v: 'consistency' as Challenge, label: 'Staying consistent' },
+                { v: 'results' as Challenge, label: 'Not seeing results' },
+                { v: 'motivation' as Challenge, label: 'Motivation' },
+                { v: 'no_plan' as Challenge, label: 'Not knowing what to do' },
+                { v: 'nutrition' as Challenge, label: 'Eating well' },
+                { v: 'time' as Challenge, label: 'Finding time' },
+              ].map((o) => (
+                <OptionCard key={o.v} label={o.label} selected={draft.biggestChallenge === o.v} onPress={() => patch({ biggestChallenge: o.v })} />
+              ))}
+            </View>
           </View>
         )}
       </ScrollView>
 
       <View style={s.footer}>
-        <Button title={step === TOTAL_STEPS - 1 ? "Let's go" : 'Continue'} onPress={next} disabled={!canAdvance} />
+        <Button title={step === TOTAL_STEPS - 1 ? "Let's go" : 'Next'} onPress={next} disabled={!canAdvance} variant="secondary" />
       </View>
-    </View>
+    </GradientScreen>
   );
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background },
-  topBar: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.xl, paddingTop: spacing.xl },
+  topBar: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.xl, paddingTop: spacing.sm },
   backBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  content: { padding: spacing.xl, paddingBottom: spacing.xxxl, gap: spacing.lg },
-  meebooRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md, marginBottom: spacing.sm },
-  bubble: { flex: 1, backgroundColor: colors.surface, borderRadius: radii.md, padding: spacing.lg, ...shadow.card },
-  bubbleText: { ...typography.h3, fontSize: 17 },
+  content: { padding: spacing.xl, paddingBottom: spacing.xxxl, flexGrow: 1 },
+  centerStep: { alignItems: 'center' },
+  eyebrow: { fontFamily: fontFamilies.semiBold, fontSize: 13, color: 'rgba(255,255,255,0.7)', letterSpacing: 0.4, marginBottom: spacing.sm, textTransform: 'uppercase' },
+  question: { ...typography.h2, color: colors.white, textAlign: 'center', marginTop: spacing.md, marginBottom: spacing.xl },
   input: {
-    backgroundColor: colors.surface,
+    width: '100%',
+    backgroundColor: 'rgba(255,255,255,0.14)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
     borderRadius: radii.md,
     padding: spacing.lg,
-    fontSize: 18,
+    fontSize: 17,
     fontFamily: fontFamilies.medium,
-    color: colors.textPrimary,
-    ...shadow.card,
+    color: colors.white,
+    textAlign: 'center',
   },
-  rowGap: { gap: spacing.md },
+  rowGap: { gap: spacing.md, width: '100%' },
   option: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     borderRadius: radii.md,
     padding: spacing.lg,
     borderWidth: 1.5,
     borderColor: 'transparent',
-    ...shadow.card,
   },
-  optionSelected: { borderColor: colors.primaryBlue, backgroundColor: colors.lightBlueSurface },
-  optionLabel: { ...typography.bodyMedium },
-  optionLabelSelected: { color: colors.primaryBlue },
-  optionSublabel: { ...typography.bodyMuted, marginTop: 2 },
-  radio: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
-  radioSelected: { borderColor: colors.primaryBlue },
-  radioDot: { width: 11, height: 11, borderRadius: 6, backgroundColor: colors.primaryBlue },
-  fieldLabel: { ...typography.label, marginTop: spacing.sm },
-  stepperRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.xl, backgroundColor: colors.surface, borderRadius: radii.md, padding: spacing.lg, ...shadow.card },
-  stepperBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.lightBlueSurface, alignItems: 'center', justifyContent: 'center' },
-  stepperBtnText: { fontSize: 22, fontFamily: fontFamilies.bold, color: colors.primaryBlue },
-  stepperValue: { ...typography.statNumberLarge, minWidth: 90, textAlign: 'center' },
-  stepperSuffix: { fontSize: 16, fontFamily: fontFamilies.medium, color: colors.textMuted },
-  bmiCard: { alignItems: 'center', backgroundColor: colors.deepNavy, borderRadius: radii.md, padding: spacing.lg },
-  bmiValue: { fontSize: 28, fontFamily: fontFamilies.bold, color: colors.white },
-  bmiLabel: { fontSize: 13, fontFamily: fontFamilies.medium, color: 'rgba(255,255,255,0.65)', marginTop: 2 },
-  sexRow: { flexDirection: 'row', gap: spacing.sm },
-  sexPill: { flex: 1, paddingVertical: spacing.md, borderRadius: radii.pill, backgroundColor: colors.surface, alignItems: 'center', ...shadow.card },
-  sexPillActive: { backgroundColor: colors.primaryBlue },
-  sexPillText: { ...typography.bodyMedium },
-  sexPillTextActive: { color: colors.white },
-  daysRow: { flexDirection: 'row', justifyContent: 'center', gap: spacing.md, flexWrap: 'wrap' },
-  dayCircle: { width: 58, height: 58, borderRadius: 29, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', ...shadow.card },
-  dayCircleActive: { backgroundColor: colors.primaryBlue },
-  dayCircleText: { fontSize: 20, fontFamily: fontFamilies.bold, color: colors.textPrimary },
-  dayCircleTextActive: { color: colors.white },
-  footer: { padding: spacing.xl, borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.background },
+  optionSelected: { borderColor: colors.white, backgroundColor: 'rgba(255,255,255,0.22)' },
+  optionLabel: { fontFamily: fontFamilies.medium, fontSize: 15.5, color: 'rgba(255,255,255,0.9)' },
+  optionLabelSelected: { color: colors.white, fontFamily: fontFamilies.semiBold },
+  radio: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: 'rgba(255,255,255,0.4)', alignItems: 'center', justifyContent: 'center' },
+  radioSelected: { borderColor: colors.white },
+  radioDot: { width: 11, height: 11, borderRadius: 6, backgroundColor: colors.white },
+  sexRow: { flexDirection: 'row', gap: spacing.lg, width: '100%' },
+  sexCard: { flex: 1, alignItems: 'center', gap: spacing.sm, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: radii.lg, paddingVertical: spacing.xl, borderWidth: 1.5, borderColor: 'transparent' },
+  sexCardActive: { borderColor: colors.white, backgroundColor: 'rgba(255,255,255,0.2)' },
+  sexCardLabel: { fontFamily: fontFamilies.bold, fontSize: 13, color: colors.white, letterSpacing: 0.5 },
+  bmiCard: { alignItems: 'center', backgroundColor: 'rgba(6,20,40,0.4)', borderRadius: radii.md, padding: spacing.lg, marginTop: spacing.xxl },
+  bmiValue: { fontFamily: fontFamilies.bold, fontSize: 26, color: colors.white },
+  bmiLabel: { fontFamily: fontFamilies.medium, fontSize: 12.5, color: 'rgba(255,255,255,0.65)', marginTop: 2 },
+  hint: { fontFamily: fontFamilies.regular, fontSize: 13, color: 'rgba(255,255,255,0.65)', textAlign: 'center', marginTop: spacing.lg, paddingHorizontal: spacing.lg },
+  locationGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, width: '100%' },
+  locationCard: {
+    width: '47%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderRadius: radii.md,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.md,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+  },
+  locationCardActive: { backgroundColor: colors.white, borderColor: colors.white },
+  locationLabel: { fontFamily: fontFamilies.semiBold, fontSize: 13.5, color: colors.white },
+  locationLabelActive: { color: colors.primaryBlue },
+  footer: { padding: spacing.xl },
 });

@@ -25,6 +25,7 @@ const defaultProfile: UserProfile = {
   biggestChallenge: 'consistency',
   bmi: 0,
   bodyStageIndex: 3,
+  goalBodyStageIndex: 6,
   onboardingComplete: false,
 };
 

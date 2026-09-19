@@ -1,5 +1,10 @@
 export type BodyTrack = 'muscle' | 'fat';
 
+export const bodyStageLabels: Record<BodyTrack, string[]> = {
+  muscle: ['Very lean', 'Lean', 'Toned', 'Fit', 'Athletic', 'Defined', 'Strong', 'Muscular', 'Very muscular', 'Elite'],
+  fat: ['Lean', 'Slim', 'Fit', 'Average', 'Soft', 'Fuller', 'Heavy', 'Very heavy', 'Plus', 'Maximum'],
+};
+
 export interface BodyMetrics {
   shoulderHalf: number;
   chestHalf: number;

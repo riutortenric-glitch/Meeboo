@@ -17,6 +17,19 @@ export const brand = {
   blue800: '#123E85',
   blue900: '#0C2E63',
 
+  // Pink family — mirrors the blue scale exactly, used to tint Meeboo when
+  // the user is female, per the reference mockups' dual-track branding.
+  pink50: '#FFF0F5',
+  pink100: '#FFDCE8',
+  pink200: '#FFB6D0',
+  pink300: '#FF8FB8',
+  pink400: '#F464A0',
+  pink500: '#E23E88',
+  pink600: '#C92B74',
+  pink700: '#A31F5F',
+  pink800: '#7D174A',
+  pink900: '#5C1038',
+
   // Flame — the emotional core of the product. A real sunset gradient, not a
   // flat orange, so it reads as alive rather than an icon.
   flameCore: '#FFE9A8',

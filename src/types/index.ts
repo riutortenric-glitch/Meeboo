@@ -22,7 +22,8 @@ export interface UserProfile {
   trainingDaysPerWeek: number;
   biggestChallenge: Challenge;
   bmi: number;
-  bodyStageIndex: number; // 0-9 index into the 10-stage scale for the user's goal
+  bodyStageIndex: number; // 0-9 index into the 10-stage scale — the user's current body
+  goalBodyStageIndex: number; // 0-9 — the body they picked as their target in onboarding
   onboardingComplete: boolean;
 }
 

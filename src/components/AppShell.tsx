@@ -8,13 +8,13 @@ import { fontFamilies, typography } from '../theme/typography';
 import { HomeIcon, MeIcon, NutritionIcon, ProgressIcon, SparkleIcon, TrainIcon } from './icons';
 import { ProgressBar } from './ProgressBar';
 
-export type TabKey = 'Home' | 'Train' | 'Nutrition' | 'Progress' | 'Me';
+export type TabKey = 'Home' | 'Progress' | 'Train' | 'Nutrition' | 'Me';
 
 export const TAB_ITEMS: { key: TabKey; label: string; Icon: typeof HomeIcon }[] = [
   { key: 'Home', label: 'Home', Icon: HomeIcon },
+  { key: 'Progress', label: 'Progress', Icon: ProgressIcon },
   { key: 'Train', label: 'Train', Icon: TrainIcon },
   { key: 'Nutrition', label: 'Nutrition', Icon: NutritionIcon },
-  { key: 'Progress', label: 'Progress', Icon: ProgressIcon },
   { key: 'Me', label: 'Me', Icon: MeIcon },
 ];
 

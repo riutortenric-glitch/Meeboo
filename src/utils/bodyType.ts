@@ -1,3 +1,4 @@
+import { MeebooTint } from '../illustrations/MeebooFigure';
 import { Goal, Sex } from '../types';
 
 export function calculateBmi(heightCm: number, weightKg: number): number {
@@ -36,4 +37,8 @@ export function usesMuscleScale(goal: Goal): boolean {
 
 export function sexLabel(sex: Sex): string {
   return sex === 'male' ? 'Male' : sex === 'female' ? 'Female' : 'Other';
+}
+
+export function tintForSex(sex?: Sex): MeebooTint {
+  return sex === 'female' ? 'pink' : 'blue';
 }

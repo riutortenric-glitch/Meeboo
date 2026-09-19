@@ -10,7 +10,7 @@ import { useWorkoutStore } from '../../state/workoutStore';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
 import { fontFamilies, typography } from '../../theme/typography';
-import { usesMuscleScale } from '../../utils/bodyType';
+import { tintForSex, usesMuscleScale } from '../../utils/bodyType';
 import { workoutCompleteLine } from '../../utils/meebooVoice';
 
 export function WorkoutSummaryScreen() {
@@ -27,7 +27,7 @@ export function WorkoutSummaryScreen() {
   return (
     <View style={styles.root}>
       <View style={styles.hero}>
-        <MeebooFigure size={130} bodyStage={profile?.bodyStageIndex ?? 3} track={track} flameLevel="large" />
+        <MeebooFigure size={130} bodyStage={profile?.bodyStageIndex ?? 3} track={track} flameLevel="large" tint={tintForSex(profile?.sex)} />
         <Text style={styles.title}>Workout complete</Text>
         <Text style={styles.subtitle}>{workoutCompleteLine(totalSets)}</Text>
       </View>

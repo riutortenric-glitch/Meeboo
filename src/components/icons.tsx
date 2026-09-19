@@ -173,6 +173,36 @@ export function FlameIcon({ color, size = 18 }: IconProps) {
   );
 }
 
+export function MountainIcon({ color, size = 18, strokeWidth = 1.8 }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M2.5 19L9 7L13 14L15.5 10L21.5 19H2.5Z" stroke={color} strokeWidth={strokeWidth} strokeLinejoin="round" strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+export function PlayIcon({ color, size = 18 }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M7 4.5V19.5L19 12L7 4.5Z" fill={color} />
+    </Svg>
+  );
+}
+
+export function HeartIcon({ color, size = 18, filled = false, strokeWidth = 1.8 }: IconProps & { filled?: boolean }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 20.3C12 20.3 3.5 15.4 3.5 9.3C3.5 6.4 5.7 4.3 8.4 4.3C10 4.3 11.3 5 12 6.1C12.7 5 14 4.3 15.6 4.3C18.3 4.3 20.5 6.4 20.5 9.3C20.5 15.4 12 20.3 12 20.3Z"
+        fill={filled ? color : 'none'}
+        stroke={color}
+        strokeWidth={strokeWidth}
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
 export function SparkleIcon({ color, size = 18 }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -212,11 +242,11 @@ const muscleIconPaths: Record<string, string> = {
   cardio: 'M12 20C12 20 4 14 4 9C4 6 6.2 4 9 4C10.5 4 12 5 12 5C12 5 13.5 4 15 4C17.8 4 20 6 20 9C20 14 12 20 12 20Z',
 };
 
-export function MuscleGroupIcon({ group, color, size = 18 }: { group: string; color: string; size?: number }) {
+export function MuscleGroupIcon({ group, color, size = 18, strokeWidth = 1.7 }: { group: string; color: string; size?: number; strokeWidth?: number }) {
   const d = muscleIconPaths[group] ?? muscleIconPaths.core;
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path d={d} stroke={color} strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" />
+      <Path d={d} stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   );
 }
